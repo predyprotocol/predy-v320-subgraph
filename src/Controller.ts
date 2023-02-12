@@ -105,7 +105,8 @@ export function handlePositionUpdated(event: PositionUpdated): void {
     openPosition.sqrtTradeAmount = BigInt.zero()
     openPosition.entryValue = BigInt.zero()
     openPosition.sqrtEntryValue = BigInt.zero()
-    openPosition.sqrtRebalanceEntryValue = BigInt.zero()
+    openPosition.sqrtRebalanceEntryValueStable = BigInt.zero()
+    openPosition.sqrtRebalanceEntryValueUnderlying = BigInt.zero()
     openPosition.feeAmount = BigInt.zero()
   }
 
@@ -113,7 +114,8 @@ export function handlePositionUpdated(event: PositionUpdated): void {
   openPosition.sqrtTradeAmount = openPosition.sqrtTradeAmount.plus(event.params.tradeSqrtAmount)
   openPosition.entryValue = openPosition.entryValue.plus(event.params.payoff.perpEntryUpdate)
   openPosition.sqrtEntryValue = openPosition.sqrtEntryValue.plus(event.params.payoff.sqrtEntryUpdate)
-  openPosition.sqrtRebalanceEntryValue = openPosition.sqrtRebalanceEntryValue.plus(event.params.payoff.sqrtRebalanceEntryUpdate)
+  openPosition.sqrtRebalanceEntryValueStable = openPosition.sqrtRebalanceEntryValueStable.plus(event.params.payoff.sqrtRebalanceEntryUpdateStable)
+  openPosition.sqrtRebalanceEntryValueUnderlying = openPosition.sqrtRebalanceEntryValueUnderlying.plus(event.params.payoff.sqrtRebalanceEntryUpdateUnderlying)
   openPosition.feeAmount = openPosition.feeAmount.plus(event.params.fee)
 
   openPosition.save()

@@ -35,7 +35,8 @@ type OpenPositionEntity @entity {
   sqrtTradeAmount: BigInt! # int256
   entryValue: BigInt! # int256
   sqrtEntryValue: BigInt! # int256
-  sqrtRebalanceEntryValue: BigInt! # int256
+  sqrtRebalanceEntryValueStable: BigInt! # int256
+  sqrtRebalanceEntryValueUnderlying: BigInt! # int256
   feeAmount: BigInt! # int256
   createdAt: BigInt!
 }

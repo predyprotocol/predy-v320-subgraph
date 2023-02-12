@@ -28,7 +28,7 @@ dataSources:
           handler: handleAssetGroupAdded
         - event: PairAdded(uint256,uint256,address)
           handler: handlePairAdded
-        - event: VaultCreated(uint256,address,uint256)
+        - event: VaultCreated(uint256,address,uint256,bool)
           handler: handleVaultCreated
         - event: TokenSupplied(uint256,(uint256,uint256),uint256)
           handler: handleTokenSupplied
@@ -36,7 +36,7 @@ dataSources:
           handler: handleTokenWithdrawn
         - event: MarginUpdated(uint256,int256)
           handler: handleMarginUpdated
-        - event: PositionUpdated(uint256,uint256,int256,int256,(int256,int256,int256,int256,int256),int256)
+        - event: PositionUpdated(uint256,uint256,int256,int256,(int256,int256,int256,int256,int256,int256),int256)
           handler: handlePositionUpdated
       file: ./src/Controller.ts
   - kind: ethereum/contract
