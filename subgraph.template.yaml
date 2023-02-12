@@ -1,0 +1,62 @@
+specVersion: 0.0.4
+schema:
+  file: ./schema.graphql
+dataSources:
+  {{#assets}}
+  - kind: ethereum/contract
+    name: Controller
+    network: {{network}}
+    source:
+      address: "{{Controller}}"
+      abi: Controller
+      startBlock: {{startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - AssetGroupEntity
+        - AssetEntity
+        - VaultEntity
+      abis:
+        - name: Controller
+          file: ./abis/Controller.json
+      eventHandlers:
+        - event: OperatorUpdated(address)
+          handler: handleOperatorUpdated
+        - event: AssetGroupAdded(uint256,uint256)
+          handler: handleAssetGroupAdded
+        - event: PairAdded(uint256,uint256,address)
+          handler: handlePairAdded
+        - event: VaultCreated(uint256,address,uint256)
+          handler: handleVaultCreated
+        - event: TokenSupplied(uint256,(uint256,uint256),uint256)
+          handler: handleTokenSupplied
+        - event: TokenWithdrawn(uint256,(uint256,uint256),uint256)
+          handler: handleTokenWithdrawn
+        - event: MarginUpdated(uint256,int256)
+          handler: handleMarginUpdated
+        - event: PositionUpdated(uint256,uint256,int256,int256,(int256,int256,int256,int256,int256),int256)
+          handler: handlePositionUpdated
+      file: ./src/Controller.ts
+  - kind: ethereum/contract
+    name: UniswapV3Pool
+    network: {{network}}
+    source:
+      address: "{{UniswapV3Pool}}"
+      abi: UniswapV3Pool
+      startBlock: {{startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - UniFeeGrowthHourly
+      abis:
+        - name: UniswapV3Pool
+          file: ./abis/UniswapV3Pool.json
+      eventHandlers:
+        - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
+          handler: handleSwap
+      file: ./src/UniswapV3Pool.ts
+  {{/assets}}

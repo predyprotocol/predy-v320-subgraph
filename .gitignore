@@ -1,0 +1,7 @@
+node_modules
+build
+generated
+
+# auto-generated
+subgraph.yaml
+src/contracts.ts

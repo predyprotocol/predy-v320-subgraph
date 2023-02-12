@@ -1,0 +1,10 @@
+{
+  "network": "arbitrum-goerli",
+  "assets": [
+    {
+      "Controller": "0x0C8a3fE7D6CbAb858B21c3C57D040892F2227587",
+      "UniswapV3Pool": "0xe506cCa8C784bF0911D6dF2A3A871B766a6D816E",
+      "startBlock": 7043522
+    }
+  ]
+}

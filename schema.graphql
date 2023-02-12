@@ -1,0 +1,99 @@
+type AssetGroupEntity @entity {
+  id: ID!
+  assetGroupId: BigInt! # uint256
+  stableTokenId: BigInt! # uint256
+  assets: [AssetEntity!]! @derivedFrom(field: "assetGroup")
+}
+
+type AssetEntity @entity {
+  id: ID!
+  tokenId: BigInt!
+  assetGroup: AssetGroupEntity!
+  uniswapPool: Bytes # address
+  totalSupply: BigInt! # uint256
+  totalBorrow: BigInt! # uint256
+  sqrtTotalSupply: BigInt!
+  sqrtTotalBorrow: BigInt!
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
+
+type VaultEntity @entity {
+  id: ID! # vaultId.toString()
+  vaultId: BigInt! # uint256
+  owner: Bytes! # address
+  assetGroupId: BigInt! # uint256
+  margin: BigInt! # int256
+  openPositions: [OpenPositionEntity!]! @derivedFrom(field: "vault")
+}
+
+type OpenPositionEntity @entity {
+  id: ID!
+  vault: VaultEntity!
+  tokenId: BigInt!
+  tradeAmount: BigInt! # int256
+  sqrtTradeAmount: BigInt! # int256
+  entryValue: BigInt! # int256
+  sqrtEntryValue: BigInt! # int256
+  sqrtRebalanceEntryValue: BigInt! # int256
+  feeAmount: BigInt! # int256
+  createdAt: BigInt!
+}
+
+enum Action {
+  POSITION
+  MARGIN
+  LIQUIDATION
+}
+
+enum Product {
+  PERP
+  SQRT
+}
+
+type TradeHistoryItem @entity {
+  id: ID! # txHash
+  vault: VaultEntity!
+  action: Action!
+  product: Product
+  size: BigInt!
+  entryValue: BigInt
+  payoff: BigInt
+  txHash: String!
+  createdAt: BigInt!
+}
+
+type InterestGrowthUpdatedEntity @entity {
+  id: ID! # txHash
+  tokenId: BigInt!
+  assetGrowth: BigInt!
+  debtGrowth: BigInt!
+  supplyPremiumGrowth: BigInt!
+  borrowPremiumGrowth: BigInt!
+  fee0Growth: BigInt!
+  fee1Growth: BigInt!
+  accumulatedProtocolFee: BigInt!
+  createdAt: BigInt!
+}
+
+type InterestGrowthUpdatedDaily @entity {
+  id: ID! #
+  tokenId: BigInt!
+  assetGrowth: BigInt!
+  debtGrowth: BigInt!
+  supplyPremiumGrowth: BigInt!
+  borrowPremiumGrowth: BigInt!
+  fee0Growth: BigInt!
+  fee1Growth: BigInt!
+  accumulatedProtocolFee: BigInt!
+  createdAt: BigInt!
+}
+
+type UniFeeGrowthHourly @entity {
+  id: ID! # yyyy-MM-dd
+  feeGrowthGlobal0X128: BigInt!
+  feeGrowthGlobal1X128: BigInt!
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
+
