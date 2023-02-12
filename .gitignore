@@ -8,3 +8,4 @@ src/contracts.ts
 
 # graph
 .latest.json
+.bin
