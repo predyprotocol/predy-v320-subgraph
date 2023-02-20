@@ -24,20 +24,26 @@ dataSources:
       eventHandlers:
         - event: OperatorUpdated(address)
           handler: handleOperatorUpdated
-        - event: AssetGroupAdded(uint256,uint256)
+        - event: AssetGroupAdded(uint256,uint256,uint256[])
           handler: handleAssetGroupAdded
         - event: PairAdded(uint256,uint256,address)
           handler: handlePairAdded
         - event: VaultCreated(uint256,address,uint256,bool)
           handler: handleVaultCreated
-        - event: TokenSupplied(uint256,(uint256,uint256),uint256)
+        - event: TokenSupplied(address,(uint256,uint256),uint256)
           handler: handleTokenSupplied
-        - event: TokenWithdrawn(uint256,(uint256,uint256),uint256)
+        - event: TokenWithdrawn(address,(uint256,uint256),uint256)
           handler: handleTokenWithdrawn
         - event: MarginUpdated(uint256,int256)
           handler: handleMarginUpdated
+        - event: IsolatedVaultOpened(uint256,uint256,uint256)
+          handler: handleIsolatedVaultOpened
+        - event: IsolatedVaultClosed(uint256,uint256,uint256)
+          handler: handleIsolatedVaultClosed
         - event: PositionUpdated(uint256,uint256,int256,int256,(int256,int256,int256,int256,int256,int256),int256)
           handler: handlePositionUpdated
+        - event: FeeCollected(uint256,uint256,int256)
+          handler: handleFeeCollected
       file: ./src/Controller.ts
   - kind: ethereum/contract
     name: UniswapV3Pool

@@ -1,7 +1,7 @@
 import { BigInt } from '@graphprotocol/graph-ts'; //
 import { assert, beforeEach, clearStore, describe, test } from 'matchstick-as/assembly/index';
-import { handleAssetGroupAdded, handlePositionUpdated } from '../src/Controller';
-import { createAssetGroupAdded, createPositionUpdated } from './utils';
+import { handleAssetGroupAdded, handleFeeCollected, handlePositionUpdated } from '../src/Controller';
+import { createAssetGroupAdded, createFeeCollectedEvent, createPositionUpdated } from './utils';
 
 beforeEach(() => {
   clearStore() // <-- clear the store before each test in the file
@@ -14,7 +14,7 @@ describe("handleAssetGroupAdded", () => {
 
     assert.entityCount('AssetGroupEntity', 1)
     assert.fieldEquals('AssetGroupEntity', '1', 'assetGroupId', '1')
-    assert.fieldEquals('AssetGroupEntity', '1', 'stableTokenId', '1')
+    assert.fieldEquals('AssetGroupEntity', '1', 'stableAssetId', '1')
   })
 })
 
@@ -25,7 +25,7 @@ describe("handlePositionUpdated", () => {
     handlePositionUpdated(positionUpdatedEvent)
 
     assert.entityCount('OpenPositionEntity', 1)
-    assert.fieldEquals('OpenPositionEntity', '1/2', 'tokenId', '2')
+    assert.fieldEquals('OpenPositionEntity', '1/2', 'assetId', '2')
     assert.fieldEquals('OpenPositionEntity', '1/2', 'tradeAmount', '1')
   })
 
@@ -37,7 +37,18 @@ describe("handlePositionUpdated", () => {
     handlePositionUpdated(positionUpdatedEvent2)
 
     assert.entityCount('OpenPositionEntity', 1)
-    assert.fieldEquals('OpenPositionEntity', '1/2', 'tokenId', '2')
+    assert.fieldEquals('OpenPositionEntity', '1/2', 'assetId', '2')
     assert.fieldEquals('OpenPositionEntity', '1/2', 'tradeAmount', '0')
+  })
+})
+
+describe("handleFeeCollected", () => {
+  test('fee collected', () => {
+    const feeCollectedEvent = createFeeCollectedEvent(BigInt.fromI32(1), BigInt.fromI32(2), BigInt.fromI32(10))
+
+    handleFeeCollected(feeCollectedEvent)
+
+    assert.entityCount('OpenPositionEntity', 1)
+    assert.fieldEquals('OpenPositionEntity', '1/2', 'feeAmount', '10')
   })
 })

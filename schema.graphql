@@ -1,13 +1,13 @@
 type AssetGroupEntity @entity {
   id: ID!
   assetGroupId: BigInt! # uint256
-  stableTokenId: BigInt! # uint256
+  stableAssetId: BigInt! # uint256
   assets: [AssetEntity!]! @derivedFrom(field: "assetGroup")
 }
 
 type AssetEntity @entity {
   id: ID!
-  tokenId: BigInt!
+  assetId: BigInt!
   assetGroup: AssetGroupEntity!
   uniswapPool: Bytes # address
   totalSupply: BigInt! # uint256
@@ -24,13 +24,14 @@ type VaultEntity @entity {
   owner: Bytes! # address
   assetGroupId: BigInt! # uint256
   margin: BigInt! # int256
+  isMainVault: Boolean! # bool
   openPositions: [OpenPositionEntity!]! @derivedFrom(field: "vault")
 }
 
 type OpenPositionEntity @entity {
   id: ID!
   vault: VaultEntity!
-  tokenId: BigInt!
+  assetId: BigInt!
   tradeAmount: BigInt! # int256
   sqrtTradeAmount: BigInt! # int256
   entryValue: BigInt! # int256
@@ -45,6 +46,7 @@ enum Action {
   POSITION
   MARGIN
   LIQUIDATION
+  FEE
 }
 
 enum Product {
@@ -66,7 +68,7 @@ type TradeHistoryItem @entity {
 
 type InterestGrowthUpdatedEntity @entity {
   id: ID! # txHash
-  tokenId: BigInt!
+  assetId: BigInt!
   assetGrowth: BigInt!
   debtGrowth: BigInt!
   supplyPremiumGrowth: BigInt!
@@ -79,7 +81,7 @@ type InterestGrowthUpdatedEntity @entity {
 
 type InterestGrowthUpdatedDaily @entity {
   id: ID! #
-  tokenId: BigInt!
+  assetId: BigInt!
   assetGrowth: BigInt!
   debtGrowth: BigInt!
   supplyPremiumGrowth: BigInt!

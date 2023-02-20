@@ -21,11 +21,122 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "stableTokenId",
+        "name": "stableAssetId",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "assetIds",
+        "type": "uint256[]"
       }
     ],
     "name": "AssetGroupAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "assetId",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "riskRatio",
+            "type": "uint256"
+          },
+          {
+            "internalType": "int24",
+            "name": "rangeSize",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "rebalanceThreshold",
+            "type": "int24"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct DataType.AssetRiskParams",
+        "name": "riskParams",
+        "type": "tuple"
+      }
+    ],
+    "name": "AssetRiskParamsUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "assetId",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "baseRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "kinkRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "slope1",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "slope2",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct InterestRateModel.IRMParams",
+        "name": "irmParams",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "baseRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "kinkRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "slope1",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "slope2",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct InterestRateModel.IRMParams",
+        "name": "premiumParams",
+        "type": "tuple"
+      }
+    ],
+    "name": "IRMParamsUpdated",
     "type": "event"
   },
   {
@@ -66,7 +177,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "assetId",
         "type": "uint256"
       },
       {
@@ -82,6 +193,12 @@
   {
     "anonymous": false,
     "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "assetId",
+        "type": "uint256"
+      },
       {
         "indexed": false,
         "internalType": "uint256",
@@ -127,7 +244,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_stableTokenAddress",
+        "name": "_stableAssetAddress",
         "type": "address"
       },
       {
@@ -255,12 +372,12 @@
       },
       {
         "internalType": "uint256",
-        "name": "stableTokenId",
+        "name": "stableAssetId",
         "type": "uint256"
       },
       {
         "internalType": "uint256[]",
-        "name": "tokenIds",
+        "name": "assetIds",
         "type": "uint256[]"
       }
     ],
@@ -298,7 +415,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "stableTokenId",
+        "name": "stableAssetId",
         "type": "uint256"
       }
     ],
@@ -327,7 +444,7 @@
       },
       {
         "internalType": "address",
-        "name": "uniswapPool",
+        "name": "supplyTokenAddress",
         "type": "address"
       },
       {
@@ -444,11 +561,6 @@
           {
             "internalType": "uint256",
             "name": "fee1Growth",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "lastUpdateTimestamp",
             "type": "uint256"
           },
           {
@@ -604,7 +716,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "tokenId",
+            "name": "assetId",
             "type": "uint256"
           }
         ],
@@ -630,7 +742,7 @@
             "type": "uint256"
           }
         ],
-        "internalType": "struct TradeLogic.CloseParams",
+        "internalType": "struct IsolatedVaultLogic.CloseParams",
         "name": "_closeParams",
         "type": "tuple"
       }
@@ -679,11 +791,6 @@
           {
             "internalType": "int256",
             "name": "fee",
-            "type": "int256"
-          },
-          {
-            "internalType": "int256",
-            "name": "withdrawnAmount",
             "type": "int256"
           },
           {
@@ -798,30 +905,8 @@
             "components": [
               {
                 "internalType": "uint256",
-                "name": "tokenId",
+                "name": "assetId",
                 "type": "uint256"
-              },
-              {
-                "components": [
-                  {
-                    "internalType": "enum ScaledAsset.InterestType",
-                    "name": "interestType",
-                    "type": "uint8"
-                  },
-                  {
-                    "internalType": "int256",
-                    "name": "positionAmount",
-                    "type": "int256"
-                  },
-                  {
-                    "internalType": "uint256",
-                    "name": "lastFeeGrowth",
-                    "type": "uint256"
-                  }
-                ],
-                "internalType": "struct ScaledAsset.UserStatus",
-                "name": "lending",
-                "type": "tuple"
               },
               {
                 "components": [
@@ -986,12 +1071,7 @@
           },
           {
             "internalType": "int256",
-            "name": "available",
-            "type": "int256"
-          },
-          {
-            "internalType": "int256",
-            "name": "minDeposit",
+            "name": "margin",
             "type": "int256"
           },
           {
@@ -1000,10 +1080,15 @@
             "type": "int256"
           },
           {
+            "internalType": "int256",
+            "name": "minDeposit",
+            "type": "int256"
+          },
+          {
             "components": [
               {
                 "internalType": "uint256",
-                "name": "tokenId",
+                "name": "assetId",
                 "type": "uint256"
               },
               {
@@ -1110,7 +1195,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "tokenId",
+            "name": "assetId",
             "type": "uint256"
           }
         ],
@@ -1204,11 +1289,6 @@
           },
           {
             "internalType": "int256",
-            "name": "withdrawnAmount",
-            "type": "int256"
-          },
-          {
-            "internalType": "int256",
             "name": "minDeposit",
             "type": "int256"
           }
@@ -1237,6 +1317,37 @@
   {
     "inputs": [
       {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "assetGroupId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "assetId",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct DataType.AssetParams",
+        "name": "_assetParams",
+        "type": "tuple"
+      }
+    ],
+    "name": "reallocate",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_newOperator",
         "type": "address"
@@ -1250,11 +1361,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_vaultId",
-        "type": "uint256"
-      },
-      {
         "components": [
           {
             "internalType": "uint256",
@@ -1263,7 +1369,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "tokenId",
+            "name": "assetId",
             "type": "uint256"
           }
         ],
@@ -1281,7 +1387,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "vaultId",
+        "name": "finalMintAmount",
         "type": "uint256"
       }
     ],
@@ -1304,7 +1410,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "tokenId",
+            "name": "assetId",
             "type": "uint256"
           }
         ],
@@ -1393,11 +1499,6 @@
           },
           {
             "internalType": "int256",
-            "name": "withdrawnAmount",
-            "type": "int256"
-          },
-          {
-            "internalType": "int256",
             "name": "minDeposit",
             "type": "int256"
           }
@@ -1460,21 +1561,100 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_tokenId",
+        "name": "_assetId",
         "type": "uint256"
       },
       {
-        "internalType": "int24",
-        "name": "_rangeSize",
-        "type": "int24"
-      },
-      {
-        "internalType": "int24",
-        "name": "_rebalanceThreshold",
-        "type": "int24"
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "riskRatio",
+            "type": "uint256"
+          },
+          {
+            "internalType": "int24",
+            "name": "rangeSize",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "rebalanceThreshold",
+            "type": "int24"
+          }
+        ],
+        "internalType": "struct DataType.AssetRiskParams",
+        "name": "_riskParams",
+        "type": "tuple"
       }
     ],
-    "name": "updateAssetParams",
+    "name": "updateAssetRiskParams",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_assetId",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "baseRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "kinkRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "slope1",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "slope2",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct InterestRateModel.IRMParams",
+        "name": "_irmParams",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "baseRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "kinkRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "slope1",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "slope2",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct InterestRateModel.IRMParams",
+        "name": "_premiumParams",
+        "type": "tuple"
+      }
+    ],
+    "name": "updateIRMParams",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1488,7 +1668,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_allowListId",
+        "name": "_assetGroupId",
         "type": "uint256"
       },
       {
@@ -1525,7 +1705,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_tokenId",
+        "name": "_assetId",
         "type": "uint256"
       },
       {
@@ -1542,11 +1722,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_vaultId",
-        "type": "uint256"
-      },
-      {
         "components": [
           {
             "internalType": "uint256",
@@ -1555,7 +1730,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "tokenId",
+            "name": "assetId",
             "type": "uint256"
           }
         ],
@@ -1573,7 +1748,12 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "finalWithdrawalAmount",
+        "name": "finalBurnAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "finalWithdrawAmount",
         "type": "uint256"
       }
     ],
@@ -1581,12 +1761,17 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "T",
+    "type": "error"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "assetId",
         "type": "uint256"
       },
       {
@@ -1652,7 +1837,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "assetId",
         "type": "uint256"
       },
       {
@@ -1726,31 +1911,6 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "finalWithdrawnAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "TokenSupplyLiquidated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "vaultId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "liquidator",
         "type": "address"
@@ -1771,11 +1931,6 @@
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "T",
-    "type": "error"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -1783,6 +1938,31 @@
         "internalType": "uint256",
         "name": "vaultId",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "assetId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "int256",
+        "name": "feeCollected",
+        "type": "int256"
+      }
+    ],
+    "name": "FeeCollected",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
       },
       {
         "components": [
@@ -1793,7 +1973,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "tokenId",
+            "name": "assetId",
             "type": "uint256"
           }
         ],
@@ -1817,9 +1997,9 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "vaultId",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
       },
       {
         "components": [
@@ -1830,7 +2010,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "tokenId",
+            "name": "assetId",
             "type": "uint256"
           }
         ],
@@ -1866,7 +2046,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "tokenId",
+        "name": "assetId",
         "type": "uint256"
       },
       {
@@ -1951,6 +2131,61 @@
       }
     ],
     "name": "MarginUpdated",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "T",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "vaultId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "isolatedVaultId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "marginAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "IsolatedVaultClosed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "vaultId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "isolatedVaultId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "marginAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "IsolatedVaultOpened",
     "type": "event"
   }
 ]

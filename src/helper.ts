@@ -1,8 +1,69 @@
 import { BigInt } from '@graphprotocol/graph-ts'
 
 import {
+  OpenPositionEntity,
+  TradeHistoryItem,
   UniFeeGrowthHourly
 } from '../generated/schema'
+
+export function ensureOpenPosition(
+  id: string,
+  assetId: BigInt,
+  vaultId: BigInt,
+  eventTime: BigInt
+): OpenPositionEntity {
+  let openPosition = OpenPositionEntity.load(id)
+
+  if (openPosition == null) {
+    openPosition = new OpenPositionEntity(id)
+    openPosition.assetId = assetId
+    openPosition.createdAt = eventTime
+    openPosition.vault = vaultId.toString()
+    openPosition.tradeAmount = BigInt.zero()
+    openPosition.sqrtTradeAmount = BigInt.zero()
+    openPosition.entryValue = BigInt.zero()
+    openPosition.sqrtEntryValue = BigInt.zero()
+    openPosition.sqrtRebalanceEntryValueStable = BigInt.zero()
+    openPosition.sqrtRebalanceEntryValueUnderlying = BigInt.zero()
+    openPosition.feeAmount = BigInt.zero()
+  }
+
+  return openPosition
+}
+
+export function createMarginHistory(
+  txHash: string,
+  vaultId: BigInt,
+  size: BigInt,
+  eventTime: BigInt
+): void {
+  const historyItem = new TradeHistoryItem(txHash + '/' + vaultId.toString() + '/margin')
+
+  historyItem.vault = vaultId.toString()
+  historyItem.action = 'MARGIN'
+  historyItem.size = size
+  historyItem.txHash = txHash
+  historyItem.createdAt = eventTime
+
+  historyItem.save()
+}
+
+export function createFeeHistory(
+  txHash: string,
+  vaultId: BigInt,
+  size: BigInt,
+  eventTime: BigInt
+): void {
+  const historyItem = new TradeHistoryItem(txHash + '/' + vaultId.toString() + '/fee')
+
+  historyItem.vault = vaultId.toString()
+  historyItem.action = 'FEE'
+  historyItem.size = size
+  historyItem.txHash = txHash
+  historyItem.createdAt = eventTime
+
+  historyItem.save()
+}
 
 export function ensureUniFeeGrowthHourly(
   eventTime: BigInt
