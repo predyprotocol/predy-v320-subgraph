@@ -407,298 +407,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "assetGroups",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "stableAssetId",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "assets",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "supplyTokenAddress",
-        "type": "address"
-      },
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "riskRatio",
-            "type": "uint256"
-          },
-          {
-            "internalType": "int24",
-            "name": "rangeSize",
-            "type": "int24"
-          },
-          {
-            "internalType": "int24",
-            "name": "rebalanceThreshold",
-            "type": "int24"
-          }
-        ],
-        "internalType": "struct DataType.AssetRiskParams",
-        "name": "riskParams",
-        "type": "tuple"
-      },
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "totalCompoundDeposited",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "totalCompoundBorrowed",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "totalNormalDeposited",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "totalNormalBorrowed",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "assetScaler",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "debtScaler",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "assetGrowth",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "debtGrowth",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct ScaledAsset.TokenStatus",
-        "name": "tokenStatus",
-        "type": "tuple"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "uniswapPool",
-            "type": "address"
-          },
-          {
-            "internalType": "int24",
-            "name": "tickLower",
-            "type": "int24"
-          },
-          {
-            "internalType": "int24",
-            "name": "tickUpper",
-            "type": "int24"
-          },
-          {
-            "internalType": "uint256",
-            "name": "totalAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "borrowedAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "supplyPremiumGrowth",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "borrowPremiumGrowth",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "fee0Growth",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "fee1Growth",
-            "type": "uint256"
-          },
-          {
-            "components": [
-              {
-                "internalType": "enum ScaledAsset.InterestType",
-                "name": "interestType",
-                "type": "uint8"
-              },
-              {
-                "internalType": "int256",
-                "name": "positionAmount",
-                "type": "int256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "lastFeeGrowth",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct ScaledAsset.UserStatus",
-            "name": "rebalancePositionUnderlying",
-            "type": "tuple"
-          },
-          {
-            "components": [
-              {
-                "internalType": "enum ScaledAsset.InterestType",
-                "name": "interestType",
-                "type": "uint8"
-              },
-              {
-                "internalType": "int256",
-                "name": "positionAmount",
-                "type": "int256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "lastFeeGrowth",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct ScaledAsset.UserStatus",
-            "name": "rebalancePositionStable",
-            "type": "tuple"
-          },
-          {
-            "internalType": "int256",
-            "name": "rebalanceFeeGrowthUnderlying",
-            "type": "int256"
-          },
-          {
-            "internalType": "int256",
-            "name": "rebalanceFeeGrowthStable",
-            "type": "int256"
-          }
-        ],
-        "internalType": "struct Perp.SqrtPerpAssetStatus",
-        "name": "sqrtAssetStatus",
-        "type": "tuple"
-      },
-      {
-        "internalType": "bool",
-        "name": "isMarginZero",
-        "type": "bool"
-      },
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "baseRate",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "kinkRate",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "slope1",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "slope2",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct InterestRateModel.IRMParams",
-        "name": "irmParams",
-        "type": "tuple"
-      },
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "baseRate",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "kinkRate",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "slope1",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "slope2",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct InterestRateModel.IRMParams",
-        "name": "premiumParams",
-        "type": "tuple"
-      },
-      {
-        "internalType": "uint256",
-        "name": "lastUpdateTimestamp",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "accumulatedProtocolRevenue",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "_vaultId",
         "type": "uint256"
       },
@@ -805,6 +513,307 @@
       }
     ],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_id",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAsset",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "supplyTokenAddress",
+            "type": "address"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "riskRatio",
+                "type": "uint256"
+              },
+              {
+                "internalType": "int24",
+                "name": "rangeSize",
+                "type": "int24"
+              },
+              {
+                "internalType": "int24",
+                "name": "rebalanceThreshold",
+                "type": "int24"
+              }
+            ],
+            "internalType": "struct DataType.AssetRiskParams",
+            "name": "riskParams",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "totalCompoundDeposited",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "totalCompoundBorrowed",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "totalNormalDeposited",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "totalNormalBorrowed",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "assetScaler",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "debtScaler",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "assetGrowth",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "debtGrowth",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct ScaledAsset.TokenStatus",
+            "name": "tokenStatus",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "uniswapPool",
+                "type": "address"
+              },
+              {
+                "internalType": "int24",
+                "name": "tickLower",
+                "type": "int24"
+              },
+              {
+                "internalType": "int24",
+                "name": "tickUpper",
+                "type": "int24"
+              },
+              {
+                "internalType": "uint256",
+                "name": "totalAmount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "borrowedAmount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "supplyPremiumGrowth",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "borrowPremiumGrowth",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "fee0Growth",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "fee1Growth",
+                "type": "uint256"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "int256",
+                    "name": "positionAmount",
+                    "type": "int256"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "lastFeeGrowth",
+                    "type": "uint256"
+                  }
+                ],
+                "internalType": "struct ScaledAsset.UserStatus",
+                "name": "rebalancePositionUnderlying",
+                "type": "tuple"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "int256",
+                    "name": "positionAmount",
+                    "type": "int256"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "lastFeeGrowth",
+                    "type": "uint256"
+                  }
+                ],
+                "internalType": "struct ScaledAsset.UserStatus",
+                "name": "rebalancePositionStable",
+                "type": "tuple"
+              },
+              {
+                "internalType": "int256",
+                "name": "rebalanceFeeGrowthUnderlying",
+                "type": "int256"
+              },
+              {
+                "internalType": "int256",
+                "name": "rebalanceFeeGrowthStable",
+                "type": "int256"
+              }
+            ],
+            "internalType": "struct Perp.SqrtPerpAssetStatus",
+            "name": "sqrtAssetStatus",
+            "type": "tuple"
+          },
+          {
+            "internalType": "bool",
+            "name": "isMarginZero",
+            "type": "bool"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "baseRate",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "kinkRate",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "slope1",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "slope2",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct InterestRateModel.IRMParams",
+            "name": "irmParams",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "baseRate",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "kinkRate",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "slope1",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "slope2",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct InterestRateModel.IRMParams",
+            "name": "premiumParams",
+            "type": "tuple"
+          },
+          {
+            "internalType": "uint256",
+            "name": "lastUpdateTimestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "accumulatedProtocolRevenue",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct DataType.AssetStatus",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_id",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAssetGroup",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "stableAssetId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "assetIds",
+            "type": "uint256[]"
+          }
+        ],
+        "internalType": "struct DataType.AssetGroup",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -972,11 +981,6 @@
                   {
                     "components": [
                       {
-                        "internalType": "enum ScaledAsset.InterestType",
-                        "name": "interestType",
-                        "type": "uint8"
-                      },
-                      {
                         "internalType": "int256",
                         "name": "positionAmount",
                         "type": "int256"
@@ -993,11 +997,6 @@
                   },
                   {
                     "components": [
-                      {
-                        "internalType": "enum ScaledAsset.InterestType",
-                        "name": "interestType",
-                        "type": "uint8"
-                      },
                       {
                         "internalType": "int256",
                         "name": "positionAmount",
@@ -1056,7 +1055,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_id",
+        "name": "_vaultId",
         "type": "uint256"
       }
     ],
@@ -1064,6 +1063,11 @@
     "outputs": [
       {
         "components": [
+          {
+            "internalType": "bool",
+            "name": "isMainVault",
+            "type": "bool"
+          },
           {
             "internalType": "int256",
             "name": "vaultValue",
@@ -1113,7 +1117,89 @@
               },
               {
                 "internalType": "int256",
-                "name": "fee",
+                "name": "unrealizedFee",
+                "type": "int256"
+              }
+            ],
+            "internalType": "struct DataType.SubVaultStatusResult[]",
+            "name": "subVaults",
+            "type": "tuple[]"
+          }
+        ],
+        "internalType": "struct DataType.VaultStatusResult",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getVaultStatusWithAddress",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "vaultId",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bool",
+            "name": "isMainVault",
+            "type": "bool"
+          },
+          {
+            "internalType": "int256",
+            "name": "vaultValue",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "margin",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "positionValue",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "minDeposit",
+            "type": "int256"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "assetId",
+                "type": "uint256"
+              },
+              {
+                "internalType": "int256",
+                "name": "stableAmount",
+                "type": "int256"
+              },
+              {
+                "internalType": "int256",
+                "name": "underlyingamount",
+                "type": "int256"
+              },
+              {
+                "internalType": "int256",
+                "name": "sqrtAmount",
+                "type": "int256"
+              },
+              {
+                "internalType": "int256",
+                "name": "delta",
+                "type": "int256"
+              },
+              {
+                "internalType": "int256",
+                "name": "unrealizedFee",
                 "type": "int256"
               }
             ],
@@ -1158,20 +1244,20 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
+        "internalType": "bytes[]",
+        "name": "data",
+        "type": "bytes[]"
       }
     ],
-    "name": "mainVaults",
+    "name": "multicall",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "bytes[]",
+        "name": "results",
+        "type": "bytes[]"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -1229,6 +1315,16 @@
             "internalType": "uint256",
             "name": "deadline",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "enableCallback",
+            "type": "bool"
+          },
+          {
+            "internalType": "bytes",
+            "name": "data",
+            "type": "bytes"
           }
         ],
         "internalType": "struct TradeLogic.TradeParams",
@@ -1444,6 +1540,16 @@
             "internalType": "uint256",
             "name": "deadline",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "enableCallback",
+            "type": "bool"
+          },
+          {
+            "internalType": "bytes",
+            "name": "data",
+            "type": "bytes"
           }
         ],
         "internalType": "struct TradeLogic.TradeParams",
@@ -1907,6 +2013,18 @@
         "indexed": false,
         "internalType": "uint256",
         "name": "vaultId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "mainVaultId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "withdrawnMarginAmount",
         "type": "uint256"
       },
       {

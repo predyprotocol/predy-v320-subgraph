@@ -2,7 +2,6 @@ specVersion: 0.0.4
 schema:
   file: ./schema.graphql
 dataSources:
-  {{#assets}}
   - kind: ethereum/contract
     name: Controller
     network: {{network}}
@@ -45,6 +44,29 @@ dataSources:
         - event: FeeCollected(uint256,uint256,int256)
           handler: handleFeeCollected
       file: ./src/Controller.ts
+  {{#assets}}
+  - kind: ethereum/contract
+    name: GammaShortStrategy
+    network: {{network}}
+    source:
+      address: "{{GammaShortStrategy}}"
+      abi: GammaShortStrategy
+      startBlock: {{startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - StrategyUserHistoryItem
+      abis:
+        - name: GammaShortStrategy
+          file: ./abis/GammaShortStrategy.json
+      eventHandlers:
+        - event: DepositedToStrategy(indexed address,uint256,uint256)
+          handler: handleDepositedToStrategy
+        - event: WithdrawnFromStrategy(indexed address,uint256,uint256)
+          handler: handleWithdrawnFromStrategy
+      file: ./src/GammaShortStrategy.ts
   - kind: ethereum/contract
     name: UniswapV3Pool
     network: {{network}}

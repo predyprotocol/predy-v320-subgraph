@@ -57,11 +57,28 @@ enum Product {
 type TradeHistoryItem @entity {
   id: ID! # txHash
   vault: VaultEntity!
+  assetId: BigInt
   action: Action!
   product: Product
   size: BigInt!
   entryValue: BigInt
   payoff: BigInt
+  txHash: String!
+  createdAt: BigInt!
+}
+
+
+enum StrategyAction {
+  DEPOSIT
+  WITHDRAW
+}
+
+type StrategyUserHistoryItem @entity {
+  id: ID!
+  action: StrategyAction!
+  account: Bytes! # address
+  strategyAmount: BigInt!
+  marginAmount: BigInt!
   txHash: String!
   createdAt: BigInt!
 }

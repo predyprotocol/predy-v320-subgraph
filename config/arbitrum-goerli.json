@@ -1,10 +1,11 @@
 {
   "network": "arbitrum-goerli",
+  "Controller": "0x3f366213fb56158D34d7838b8607a190D8eB5ECD",
   "assets": [
     {
-      "Controller": "0x985558c5564D6da2D3c434F67bd10CBFc9C481CF",
+      "GammaShortStrategy": "0xCae8E359aF0dADF6B941c40c26c523e4B37e2DfA",
       "UniswapV3Pool": "0xe506cCa8C784bF0911D6dF2A3A871B766a6D816E",
-      "startBlock": 8462110
+      "startBlock": 8971000
     }
   ]
 }
