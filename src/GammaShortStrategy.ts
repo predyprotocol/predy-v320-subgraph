@@ -8,6 +8,7 @@ export function handleDepositedToStrategy(event: DepositedToStrategy): void {
   entity.account = event.params.account
   entity.strategyAmount = event.params.strategyTokenAmount
   entity.marginAmount = event.params.depositedAmount
+  entity.txHash = event.transaction.hash.toHex()
 
   entity.createdAt = event.block.timestamp
   entity.save()
@@ -20,6 +21,7 @@ export function handleWithdrawnFromStrategy(event: WithdrawnFromStrategy): void 
   entity.account = event.params.account
   entity.strategyAmount = event.params.strategyTokenAmount
   entity.marginAmount = event.params.withdrawnAmount
+  entity.txHash = event.transaction.hash.toHex()
 
   entity.createdAt = event.block.timestamp
   entity.save()

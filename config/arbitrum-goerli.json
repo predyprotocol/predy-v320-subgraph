@@ -1,6 +1,7 @@
 {
   "network": "arbitrum-goerli",
   "Controller": "0x3f366213fb56158D34d7838b8607a190D8eB5ECD",
+  "startBlock": 8971000,
   "assets": [
     {
       "GammaShortStrategy": "0xCae8E359aF0dADF6B941c40c26c523e4B37e2DfA",
