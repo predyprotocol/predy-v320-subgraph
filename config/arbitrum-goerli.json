@@ -1,12 +1,9 @@
 {
   "network": "arbitrum-goerli",
-  "Controller": "0x3f366213fb56158D34d7838b8607a190D8eB5ECD",
-  "startBlock": 8971000,
-  "assets": [
-    {
-      "GammaShortStrategy": "0xCae8E359aF0dADF6B941c40c26c523e4B37e2DfA",
-      "UniswapV3Pool": "0xe506cCa8C784bF0911D6dF2A3A871B766a6D816E",
-      "startBlock": 8971000
-    }
-  ]
+  "Controller": "0xcfb458074C06A52cCD17c00107F156291ae8f083",
+  "WethGammaShortStrategy": "0xC7f08B46590936dCc3e396E3d3CD61bC0B6bB145",
+  "WethUniswapV3Pool": "0xe506cCa8C784bF0911D6dF2A3A871B766a6D816E",
+  "WbtcGammaShortStrategy": "0x738fa8aAcD71C5d4624a9405427d194139b1B6A8",
+  "WbtcUniswapV3Pool": "0x790795655ef5C836B86B30CDbf6279db66660aa8",
+  "startBlock": 9076500
 }

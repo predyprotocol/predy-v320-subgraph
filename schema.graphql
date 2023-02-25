@@ -1,14 +1,6 @@
-type AssetGroupEntity @entity {
-  id: ID!
-  assetGroupId: BigInt! # uint256
-  stableAssetId: BigInt! # uint256
-  assets: [AssetEntity!]! @derivedFrom(field: "assetGroup")
-}
-
 type AssetEntity @entity {
   id: ID!
   assetId: BigInt!
-  assetGroup: AssetGroupEntity!
   uniswapPool: Bytes # address
   totalSupply: BigInt! # uint256
   totalBorrow: BigInt! # uint256
@@ -22,7 +14,6 @@ type VaultEntity @entity {
   id: ID! # vaultId.toString()
   vaultId: BigInt! # uint256
   owner: Bytes! # address
-  assetGroupId: BigInt! # uint256
   margin: BigInt! # int256
   isMainVault: Boolean! # bool
   openPositions: [OpenPositionEntity!]! @derivedFrom(field: "vault")
@@ -67,22 +58,6 @@ type TradeHistoryItem @entity {
   createdAt: BigInt!
 }
 
-
-enum StrategyAction {
-  DEPOSIT
-  WITHDRAW
-}
-
-type StrategyUserHistoryItem @entity {
-  id: ID!
-  action: StrategyAction!
-  account: Bytes! # address
-  strategyAmount: BigInt!
-  marginAmount: BigInt!
-  txHash: String!
-  createdAt: BigInt!
-}
-
 type InterestGrowthUpdatedEntity @entity {
   id: ID! # txHash
   assetId: BigInt!
@@ -109,8 +84,25 @@ type InterestGrowthUpdatedDaily @entity {
   createdAt: BigInt!
 }
 
+enum StrategyAction {
+  DEPOSIT
+  WITHDRAW
+}
+
+type StrategyUserHistoryItem @entity {
+  id: ID!
+  address: Bytes!
+  action: StrategyAction!
+  account: Bytes! # address
+  strategyAmount: BigInt!
+  marginAmount: BigInt!
+  txHash: String!
+  createdAt: BigInt!
+}
+
 type UniFeeGrowthHourly @entity {
   id: ID! # yyyy-MM-dd
+  address: Bytes!
   feeGrowthGlobal0X128: BigInt!
   feeGrowthGlobal1X128: BigInt!
   createdAt: BigInt!

@@ -15,12 +15,6 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "assetGroupId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
         "name": "stableAssetId",
         "type": "uint256"
       },
@@ -31,7 +25,7 @@
         "type": "uint256[]"
       }
     ],
-    "name": "AssetGroupAdded",
+    "name": "AssetGroupInitialized",
     "type": "event"
   },
   {
@@ -171,12 +165,6 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "assetGroupId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
         "name": "assetId",
         "type": "uint256"
       },
@@ -226,12 +214,6 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "assetGroupId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
         "internalType": "bool",
         "name": "isMainVault",
         "type": "bool"
@@ -239,150 +221,6 @@
     ],
     "name": "VaultCreated",
     "type": "event"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_stableAssetAddress",
-        "type": "address"
-      },
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "baseRate",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "kinkRate",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "slope1",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "slope2",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct InterestRateModel.IRMParams",
-        "name": "_irmParams",
-        "type": "tuple"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "uniswapPool",
-            "type": "address"
-          },
-          {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "riskRatio",
-                "type": "uint256"
-              },
-              {
-                "internalType": "int24",
-                "name": "rangeSize",
-                "type": "int24"
-              },
-              {
-                "internalType": "int24",
-                "name": "rebalanceThreshold",
-                "type": "int24"
-              }
-            ],
-            "internalType": "struct DataType.AssetRiskParams",
-            "name": "assetRiskParams",
-            "type": "tuple"
-          },
-          {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "baseRate",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "kinkRate",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "slope1",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "slope2",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct InterestRateModel.IRMParams",
-            "name": "irmParams",
-            "type": "tuple"
-          },
-          {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "baseRate",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "kinkRate",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "slope1",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "slope2",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct InterestRateModel.IRMParams",
-            "name": "premiumParams",
-            "type": "tuple"
-          }
-        ],
-        "internalType": "struct DataType.AddAssetParams[]",
-        "name": "_addAssetParams",
-        "type": "tuple[]"
-      }
-    ],
-    "name": "addAssetGroup",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "assetGroupId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "stableAssetId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "assetIds",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
   },
   {
     "inputs": [
@@ -416,21 +254,9 @@
         "type": "uint256"
       },
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "assetGroupId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "assetId",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct DataType.AssetParams",
-        "name": "_assetParams",
-        "type": "tuple"
+        "internalType": "uint256",
+        "name": "_assetId",
+        "type": "uint256"
       },
       {
         "components": [
@@ -786,13 +612,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_id",
-        "type": "uint256"
-      }
-    ],
+    "inputs": [],
     "name": "getAssetGroup",
     "outputs": [
       {
@@ -899,11 +719,6 @@
             "internalType": "address",
             "name": "owner",
             "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "assetGroupId",
-            "type": "uint256"
           },
           {
             "internalType": "int256",
@@ -1217,7 +1032,128 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_stableAssetAddress",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "baseRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "kinkRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "slope1",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "slope2",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct InterestRateModel.IRMParams",
+        "name": "_irmParams",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "uniswapPool",
+            "type": "address"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "riskRatio",
+                "type": "uint256"
+              },
+              {
+                "internalType": "int24",
+                "name": "rangeSize",
+                "type": "int24"
+              },
+              {
+                "internalType": "int24",
+                "name": "rebalanceThreshold",
+                "type": "int24"
+              }
+            ],
+            "internalType": "struct DataType.AssetRiskParams",
+            "name": "assetRiskParams",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "baseRate",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "kinkRate",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "slope1",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "slope2",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct InterestRateModel.IRMParams",
+            "name": "irmParams",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "baseRate",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "kinkRate",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "slope1",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "slope2",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct InterestRateModel.IRMParams",
+            "name": "premiumParams",
+            "type": "tuple"
+          }
+        ],
+        "internalType": "struct DataType.AddAssetParams[]",
+        "name": "_addAssetParams",
+        "type": "tuple[]"
+      }
+    ],
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -1273,21 +1209,9 @@
         "type": "uint256"
       },
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "assetGroupId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "assetId",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct DataType.AssetParams",
-        "name": "_assetParams",
-        "type": "tuple"
+        "internalType": "uint256",
+        "name": "_assetId",
+        "type": "uint256"
       },
       {
         "components": [
@@ -1413,21 +1337,9 @@
   {
     "inputs": [
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "assetGroupId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "assetId",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct DataType.AssetParams",
-        "name": "_assetParams",
-        "type": "tuple"
+        "internalType": "uint256",
+        "name": "_assetId",
+        "type": "uint256"
       }
     ],
     "name": "reallocate",
@@ -1457,21 +1369,9 @@
   {
     "inputs": [
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "assetGroupId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "assetId",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct DataType.AssetParams",
-        "name": "_assetParams",
-        "type": "tuple"
+        "internalType": "uint256",
+        "name": "_assetId",
+        "type": "uint256"
       },
       {
         "internalType": "uint256",
@@ -1498,21 +1398,9 @@
         "type": "uint256"
       },
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "assetGroupId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "assetId",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct DataType.AssetParams",
-        "name": "_assetParams",
-        "type": "tuple"
+        "internalType": "uint256",
+        "name": "_assetId",
+        "type": "uint256"
       },
       {
         "components": [
@@ -1773,11 +1661,6 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "_assetGroupId",
-        "type": "uint256"
-      },
-      {
         "internalType": "int256",
         "name": "_marginAmount",
         "type": "int256"
@@ -1828,21 +1711,9 @@
   {
     "inputs": [
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "assetGroupId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "assetId",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct DataType.AssetParams",
-        "name": "_assetParams",
-        "type": "tuple"
+        "internalType": "uint256",
+        "name": "_assetId",
+        "type": "uint256"
       },
       {
         "internalType": "uint256",
@@ -2083,22 +1954,10 @@
         "type": "address"
       },
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "assetGroupId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "assetId",
-            "type": "uint256"
-          }
-        ],
         "indexed": false,
-        "internalType": "struct DataType.AssetParams",
-        "name": "assetParams",
-        "type": "tuple"
+        "internalType": "uint256",
+        "name": "assetId",
+        "type": "uint256"
       },
       {
         "indexed": false,
@@ -2120,22 +1979,10 @@
         "type": "address"
       },
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "assetGroupId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "assetId",
-            "type": "uint256"
-          }
-        ],
         "indexed": false,
-        "internalType": "struct DataType.AssetParams",
-        "name": "assetParams",
-        "type": "tuple"
+        "internalType": "uint256",
+        "name": "assetId",
+        "type": "uint256"
       },
       {
         "indexed": false,

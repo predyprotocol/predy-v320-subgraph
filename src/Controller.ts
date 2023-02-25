@@ -1,25 +1,15 @@
 import { BigInt, Bytes, log } from '@graphprotocol/graph-ts'
-import { AssetGroupAdded, FeeCollected, IsolatedVaultClosed, IsolatedVaultOpened, MarginUpdated, OperatorUpdated, PairAdded, PositionUpdated, TokenSupplied, TokenWithdrawn, VaultCreated } from '../generated/Controller/Controller';
-import { AssetEntity, AssetGroupEntity, TradeHistoryItem, VaultEntity } from '../generated/schema';
+import { FeeCollected, IsolatedVaultClosed, IsolatedVaultOpened, MarginUpdated, OperatorUpdated, PairAdded, PositionUpdated, TokenSupplied, TokenWithdrawn, VaultCreated } from '../generated/Controller/Controller';
+import { AssetEntity, TradeHistoryItem, VaultEntity } from '../generated/schema';
 import { createFeeHistory, createMarginHistory, ensureOpenPosition } from './helper';
 
 
 export function handleOperatorUpdated(event: OperatorUpdated): void {
 }
 
-export function handleAssetGroupAdded(event: AssetGroupAdded): void {
-  const assetGroup = new AssetGroupEntity(event.params.assetGroupId.toString())
-
-  assetGroup.assetGroupId = event.params.assetGroupId
-  assetGroup.stableAssetId = event.params.stableAssetId
-
-  assetGroup.save()
-}
-
 export function handlePairAdded(event: PairAdded): void {
   const asset = new AssetEntity(event.params.assetId.toString())
 
-  asset.assetGroup = event.params.assetGroupId.toString()
   asset.assetId = event.params.assetId
   asset.uniswapPool = event.params._uniswapPool
   asset.totalSupply = BigInt.zero()
@@ -35,7 +25,6 @@ export function handlePairAdded(event: PairAdded): void {
 export function handleVaultCreated(event: VaultCreated): void {
   const vault = new VaultEntity(event.params.vaultId.toString())
 
-  vault.assetGroupId = event.params.assetGroupId
   vault.vaultId = event.params.vaultId
   vault.owner = event.params.owner
   vault.margin = BigInt.zero()
@@ -45,7 +34,7 @@ export function handleVaultCreated(event: VaultCreated): void {
 }
 
 export function handleTokenSupplied(event: TokenSupplied): void {
-  const asset = AssetEntity.load(event.params.assetParams.assetId.toString())
+  const asset = AssetEntity.load(event.params.assetId.toString())
 
   if (!asset) {
     return
@@ -57,7 +46,7 @@ export function handleTokenSupplied(event: TokenSupplied): void {
 }
 
 export function handleTokenWithdrawn(event: TokenWithdrawn): void {
-  const asset = AssetEntity.load(event.params.assetParams.assetId.toString())
+  const asset = AssetEntity.load(event.params.assetId.toString())
 
   if (!asset) {
     return

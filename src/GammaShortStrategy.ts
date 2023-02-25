@@ -4,6 +4,7 @@ import { StrategyUserHistoryItem } from '../generated/schema'
 export function handleDepositedToStrategy(event: DepositedToStrategy): void {
   const entity = new StrategyUserHistoryItem(event.transaction.hash.toHex())
 
+  entity.address = event.address
   entity.action = 'DEPOSIT'
   entity.account = event.params.account
   entity.strategyAmount = event.params.strategyTokenAmount
@@ -17,6 +18,7 @@ export function handleDepositedToStrategy(event: DepositedToStrategy): void {
 export function handleWithdrawnFromStrategy(event: WithdrawnFromStrategy): void {
   const entity = new StrategyUserHistoryItem(event.transaction.hash.toHex())
 
+  entity.address = event.address
   entity.action = 'WITHDRAW'
   entity.account = event.params.account
   entity.strategyAmount = event.params.strategyTokenAmount

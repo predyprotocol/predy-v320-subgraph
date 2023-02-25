@@ -23,15 +23,13 @@ dataSources:
       eventHandlers:
         - event: OperatorUpdated(address)
           handler: handleOperatorUpdated
-        - event: AssetGroupAdded(uint256,uint256,uint256[])
-          handler: handleAssetGroupAdded
-        - event: PairAdded(uint256,uint256,address)
+        - event: PairAdded(uint256,address)
           handler: handlePairAdded
-        - event: VaultCreated(uint256,address,uint256,bool)
+        - event: VaultCreated(uint256,address,bool)
           handler: handleVaultCreated
-        - event: TokenSupplied(address,(uint256,uint256),uint256)
+        - event: TokenSupplied(address,uint256,uint256)
           handler: handleTokenSupplied
-        - event: TokenWithdrawn(address,(uint256,uint256),uint256)
+        - event: TokenWithdrawn(address,uint256,uint256)
           handler: handleTokenWithdrawn
         - event: MarginUpdated(uint256,int256)
           handler: handleMarginUpdated
@@ -44,12 +42,11 @@ dataSources:
         - event: FeeCollected(uint256,uint256,int256)
           handler: handleFeeCollected
       file: ./src/Controller.ts
-  {{#assets}}
   - kind: ethereum/contract
-    name: GammaShortStrategy
+    name: WethGammaShortStrategy
     network: {{network}}
     source:
-      address: "{{GammaShortStrategy}}"
+      address: "{{WethGammaShortStrategy}}"
       abi: GammaShortStrategy
       startBlock: {{startBlock}}
     mapping:
@@ -68,10 +65,32 @@ dataSources:
           handler: handleWithdrawnFromStrategy
       file: ./src/GammaShortStrategy.ts
   - kind: ethereum/contract
-    name: UniswapV3Pool
+    name: WbtcGammaShortStrategy
     network: {{network}}
     source:
-      address: "{{UniswapV3Pool}}"
+      address: "{{WbtcGammaShortStrategy}}"
+      abi: GammaShortStrategy
+      startBlock: {{startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - StrategyUserHistoryItem
+      abis:
+        - name: GammaShortStrategy
+          file: ./abis/GammaShortStrategy.json
+      eventHandlers:
+        - event: DepositedToStrategy(indexed address,uint256,uint256)
+          handler: handleDepositedToStrategy
+        - event: WithdrawnFromStrategy(indexed address,uint256,uint256)
+          handler: handleWithdrawnFromStrategy
+      file: ./src/GammaShortStrategy.ts
+  - kind: ethereum/contract
+    name: WethUniswapV3Pool
+    network: {{network}}
+    source:
+      address: "{{WethUniswapV3Pool}}"
       abi: UniswapV3Pool
       startBlock: {{startBlock}}
     mapping:
@@ -87,4 +106,23 @@ dataSources:
         - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
           handler: handleSwap
       file: ./src/UniswapV3Pool.ts
-  {{/assets}}
+  - kind: ethereum/contract
+    name: WbtcUniswapV3Pool
+    network: {{network}}
+    source:
+      address: "{{WbtcUniswapV3Pool}}"
+      abi: UniswapV3Pool
+      startBlock: {{startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - UniFeeGrowthHourly
+      abis:
+        - name: UniswapV3Pool
+          file: ./abis/UniswapV3Pool.json
+      eventHandlers:
+        - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
+          handler: handleSwap
+      file: ./src/UniswapV3Pool.ts
