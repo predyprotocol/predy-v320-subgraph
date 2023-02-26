@@ -165,6 +165,7 @@ export function handlePositionUpdated(event: PositionUpdated): void {
     const historyItem = new TradeHistoryItem(event.transaction.hash.toHex() + '/' + event.params.vaultId.toString() + '/perp')
 
     historyItem.vault = event.params.vaultId.toString()
+    historyItem.assetId = event.params.assetId
     historyItem.action = 'POSITION'
     historyItem.product = 'PERP'
     historyItem.size = event.params.tradeAmount
@@ -180,6 +181,7 @@ export function handlePositionUpdated(event: PositionUpdated): void {
     const historyItem = new TradeHistoryItem(event.transaction.hash.toHex() + '/' + event.params.vaultId.toString() + '/sqrt')
 
     historyItem.vault = event.params.vaultId.toString()
+    historyItem.assetId = event.params.assetId
     historyItem.action = 'POSITION'
     historyItem.product = 'SQRT'
     historyItem.size = event.params.tradeSqrtAmount
