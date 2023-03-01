@@ -102,6 +102,8 @@ dataSources:
       abis:
         - name: UniswapV3Pool
           file: ./abis/UniswapV3Pool.json
+        - name: GammaShortStrategy
+          file: ./abis/GammaShortStrategy.json
       eventHandlers:
         - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
           handler: handleSwap
@@ -122,6 +124,8 @@ dataSources:
       abis:
         - name: UniswapV3Pool
           file: ./abis/UniswapV3Pool.json
+        - name: GammaShortStrategy
+          file: ./abis/GammaShortStrategy.json
       eventHandlers:
         - event: Swap(indexed address,indexed address,int256,int256,uint160,uint128,int24)
           handler: handleSwap

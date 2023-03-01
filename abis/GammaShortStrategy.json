@@ -13,11 +13,6 @@
       },
       {
         "internalType": "uint256",
-        "name": "_assetGroupId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "_assetId",
         "type": "uint256"
       },
@@ -729,6 +724,24 @@
         "internalType": "uint256",
         "name": "finalWithdrawAmount",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawStrategyRevenue",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "withdrawAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_recepient",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
