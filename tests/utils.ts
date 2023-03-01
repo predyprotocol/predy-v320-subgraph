@@ -1,19 +1,6 @@
 import { ethereum, BigInt } from "@graphprotocol/graph-ts"
 import { newMockEvent } from "matchstick-as/assembly/index"
-import { AssetGroupAdded, FeeCollected, PositionUpdated } from "../generated/Controller/Controller"
-
-export function createAssetGroupAdded(assetGroupId: BigInt, stableAssetId: BigInt): AssetGroupAdded {
-  let assetGroupAddedEvent = changetype<AssetGroupAdded>(newMockEvent())
-  assetGroupAddedEvent.parameters = new Array()
-
-  let assetGroupIdParam = new ethereum.EventParam("assetGroupId", ethereum.Value.fromUnsignedBigInt(assetGroupId))
-  let stableAssetIdParam = new ethereum.EventParam("stableAssetId", ethereum.Value.fromUnsignedBigInt(stableAssetId))
-
-  assetGroupAddedEvent.parameters.push(assetGroupIdParam)
-  assetGroupAddedEvent.parameters.push(stableAssetIdParam)
-
-  return assetGroupAddedEvent
-}
+import { FeeCollected, PositionUpdated } from "../generated/Controller/Controller"
 
 export function createPositionUpdated(vaultId: BigInt, assetId: BigInt, tradeAmount: BigInt, tradeSqrtAmount: BigInt, fee: BigInt): PositionUpdated {
   let positionUpdatedEvent = changetype<PositionUpdated>(newMockEvent())
