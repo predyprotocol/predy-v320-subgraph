@@ -34,7 +34,7 @@ export function ensureOpenPosition(
 export function createMarginHistory(
   txHash: string,
   vaultId: BigInt,
-  size: BigInt,
+  marginAmount: BigInt,
   eventTime: BigInt
 ): void {
   const historyItem = new TradeHistoryItem(
@@ -43,7 +43,7 @@ export function createMarginHistory(
 
   historyItem.vault = vaultId.toString()
   historyItem.action = 'MARGIN'
-  historyItem.size = size
+  historyItem.payoff = marginAmount
   historyItem.txHash = txHash
   historyItem.createdAt = eventTime
 
@@ -53,7 +53,7 @@ export function createMarginHistory(
 export function createFeeHistory(
   txHash: string,
   vaultId: BigInt,
-  size: BigInt,
+  fee: BigInt,
   eventTime: BigInt
 ): void {
   const historyItem = new TradeHistoryItem(
@@ -62,7 +62,7 @@ export function createFeeHistory(
 
   historyItem.vault = vaultId.toString()
   historyItem.action = 'FEE'
-  historyItem.size = size
+  historyItem.payoff = fee
   historyItem.txHash = txHash
   historyItem.createdAt = eventTime
 
@@ -81,7 +81,7 @@ export function createLiquidationHistory(
 
   historyItem.vault = vaultId.toString()
   historyItem.action = 'LIQUIDATION'
-  historyItem.size = penalty
+  historyItem.payoff = penalty
   historyItem.txHash = txHash
   historyItem.createdAt = eventTime
 

@@ -52,9 +52,9 @@ type TradeHistoryItem @entity {
   assetId: BigInt
   action: Action!
   product: Product
-  size: BigInt!
+  size: BigInt
   entryValue: BigInt
-  payoff: BigInt
+  payoff: BigInt!
   txHash: String!
   createdAt: BigInt!
 }
