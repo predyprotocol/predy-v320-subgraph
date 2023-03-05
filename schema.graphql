@@ -16,6 +16,7 @@ type VaultEntity @entity {
   owner: Bytes! # address
   margin: BigInt! # int256
   isMainVault: Boolean! # bool
+  isClosed: Boolean! # bool
   openPositions: [OpenPositionEntity!]! @derivedFrom(field: "vault")
 }
 

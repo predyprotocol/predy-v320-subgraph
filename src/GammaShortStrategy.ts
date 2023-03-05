@@ -1,4 +1,7 @@
-import { DepositedToStrategy, WithdrawnFromStrategy } from '../generated/GammaShortStrategy/GammaShortStrategy'
+import {
+  DepositedToStrategy,
+  WithdrawnFromStrategy
+} from '../generated/GammaShortStrategy/GammaShortStrategy'
 import { StrategyUserHistoryItem } from '../generated/schema'
 
 export function handleDepositedToStrategy(event: DepositedToStrategy): void {
@@ -15,7 +18,9 @@ export function handleDepositedToStrategy(event: DepositedToStrategy): void {
   entity.save()
 }
 
-export function handleWithdrawnFromStrategy(event: WithdrawnFromStrategy): void {
+export function handleWithdrawnFromStrategy(
+  event: WithdrawnFromStrategy
+): void {
   const entity = new StrategyUserHistoryItem(event.transaction.hash.toHex())
 
   entity.address = event.address

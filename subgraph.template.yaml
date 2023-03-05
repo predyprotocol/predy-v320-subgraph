@@ -39,6 +39,10 @@ dataSources:
           handler: handleIsolatedVaultClosed
         - event: PositionUpdated(uint256,uint256,int256,int256,(int256,int256,int256,int256,int256,int256),int256)
           handler: handlePositionUpdated
+        - event: PositionLiquidated(uint256,uint256,int256,int256,(int256,int256,int256,int256,int256,int256),int256)
+          handler: handlePositionLiquidated
+        - event: VaultLiquidated(uint256,uint256,uint256,address,uint256)
+          handler: handleVaultLiquidated
         - event: FeeCollected(uint256,uint256,int256)
           handler: handleFeeCollected
       file: ./src/Controller.ts

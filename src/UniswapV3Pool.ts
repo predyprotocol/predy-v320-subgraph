@@ -1,13 +1,11 @@
 import { Swap, UniswapV3Pool } from '../generated/UniswapV3Pool/UniswapV3Pool'
 import { updateAggregatedPrice } from './AggregatedPrice'
-import { wbtcGammaShortStrategyContract, wethGammaShortStrategyContract } from './contracts'
-import { ensureUniFeeGrowthHourly } from './helper'
 import {
-  day,
-  dayAdjustment,
-  hour,
-  hourAdjustment,
-} from './time'
+  wbtcGammaShortStrategyContract,
+  wethGammaShortStrategyContract
+} from './contracts'
+import { ensureUniFeeGrowthHourly } from './helper'
+import { day, dayAdjustment, hour, hourAdjustment } from './time'
 
 export function handleSwap(event: Swap): void {
   const entity = ensureUniFeeGrowthHourly(event.block.timestamp)

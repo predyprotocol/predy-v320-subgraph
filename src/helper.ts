@@ -37,7 +37,9 @@ export function createMarginHistory(
   size: BigInt,
   eventTime: BigInt
 ): void {
-  const historyItem = new TradeHistoryItem(txHash + '/' + vaultId.toString() + '/margin')
+  const historyItem = new TradeHistoryItem(
+    txHash + '/' + vaultId.toString() + '/margin'
+  )
 
   historyItem.vault = vaultId.toString()
   historyItem.action = 'MARGIN'
@@ -54,11 +56,32 @@ export function createFeeHistory(
   size: BigInt,
   eventTime: BigInt
 ): void {
-  const historyItem = new TradeHistoryItem(txHash + '/' + vaultId.toString() + '/fee')
+  const historyItem = new TradeHistoryItem(
+    txHash + '/' + vaultId.toString() + '/fee'
+  )
 
   historyItem.vault = vaultId.toString()
   historyItem.action = 'FEE'
   historyItem.size = size
+  historyItem.txHash = txHash
+  historyItem.createdAt = eventTime
+
+  historyItem.save()
+}
+
+export function createLiquidationHistory(
+  txHash: string,
+  vaultId: BigInt,
+  penalty: BigInt,
+  eventTime: BigInt
+): void {
+  const historyItem = new TradeHistoryItem(
+    txHash + '/' + vaultId.toString() + '/fee'
+  )
+
+  historyItem.vault = vaultId.toString()
+  historyItem.action = 'LIQUIDATION'
+  historyItem.size = penalty
   historyItem.txHash = txHash
   historyItem.createdAt = eventTime
 
