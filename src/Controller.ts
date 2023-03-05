@@ -22,7 +22,7 @@ import {
   ensureOpenPosition
 } from './helper'
 
-export function handleOperatorUpdated(event: OperatorUpdated): void { }
+export function handleOperatorUpdated(event: OperatorUpdated): void {}
 
 export function handlePairAdded(event: PairAdded): void {
   const asset = new AssetEntity(event.params.assetId.toString())

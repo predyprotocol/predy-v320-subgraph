@@ -76,7 +76,7 @@ export function createLiquidationHistory(
   eventTime: BigInt
 ): void {
   const historyItem = new TradeHistoryItem(
-    txHash + '/' + vaultId.toString() + '/fee'
+    txHash + '/' + vaultId.toString() + '/liq'
   )
 
   historyItem.vault = vaultId.toString()
