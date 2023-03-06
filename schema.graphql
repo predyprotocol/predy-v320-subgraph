@@ -32,6 +32,7 @@ type OpenPositionEntity @entity {
   sqrtRebalanceEntryValueUnderlying: BigInt! # int256
   feeAmount: BigInt! # int256
   createdAt: BigInt!
+  updatedAt: BigInt!
 }
 
 enum Action {
@@ -56,32 +57,6 @@ type TradeHistoryItem @entity {
   entryValue: BigInt
   payoff: BigInt!
   txHash: String!
-  createdAt: BigInt!
-}
-
-type InterestGrowthUpdatedEntity @entity {
-  id: ID! # txHash
-  assetId: BigInt!
-  assetGrowth: BigInt!
-  debtGrowth: BigInt!
-  supplyPremiumGrowth: BigInt!
-  borrowPremiumGrowth: BigInt!
-  fee0Growth: BigInt!
-  fee1Growth: BigInt!
-  accumulatedProtocolFee: BigInt!
-  createdAt: BigInt!
-}
-
-type InterestGrowthUpdatedDaily @entity {
-  id: ID! #
-  assetId: BigInt!
-  assetGrowth: BigInt!
-  debtGrowth: BigInt!
-  supplyPremiumGrowth: BigInt!
-  borrowPremiumGrowth: BigInt!
-  fee0Growth: BigInt!
-  fee1Growth: BigInt!
-  accumulatedProtocolFee: BigInt!
   createdAt: BigInt!
 }
 

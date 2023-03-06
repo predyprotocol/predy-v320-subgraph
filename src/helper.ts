@@ -28,6 +28,8 @@ export function ensureOpenPosition(
     openPosition.feeAmount = BigInt.zero()
   }
 
+  openPosition.updatedAt = eventTime
+
   return openPosition
 }
 
