@@ -28,7 +28,7 @@ import {
   ensureOpenPosition
 } from './helper'
 
-export function handleOperatorUpdated(event: OperatorUpdated): void {}
+export function handleOperatorUpdated(event: OperatorUpdated): void { }
 
 export function handlePairAdded(event: PairAdded): void {
   const asset = new AssetEntity(event.params.assetId.toString())
@@ -191,7 +191,7 @@ function closeVault(
 export function handlePositionUpdated(event: PositionUpdated): void {
   updatePosition(
     event.transaction.hash,
-    event.transaction.index,
+    event.logIndex,
     event.params.vaultId,
     event.params.assetId,
     event.params.tradeAmount,
@@ -211,7 +211,7 @@ export function handlePositionLiquidated(event: PositionLiquidated): void {
 
   updatePosition(
     event.transaction.hash,
-    event.transaction.index,
+    event.logIndex,
     event.params.vaultId,
     event.params.assetId,
     event.params.tradeAmount,
@@ -271,11 +271,11 @@ function updatePosition(
   if (!tradeAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-        '/' +
-        logIndex.toString() +
-        '/' +
-        vaultId.toString() +
-        '/perp'
+      '/' +
+      logIndex.toString() +
+      '/' +
+      vaultId.toString() +
+      '/perp'
     )
 
     historyItem.vault = vaultId.toString()
@@ -294,11 +294,11 @@ function updatePosition(
   if (!tradeSqrtAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-        '/' +
-        logIndex.toString() +
-        '/' +
-        vaultId.toString() +
-        '/sqrt'
+      '/' +
+      logIndex.toString() +
+      '/' +
+      vaultId.toString() +
+      '/sqrt'
     )
 
     historyItem.vault = vaultId.toString()
@@ -335,7 +335,7 @@ export function handleFeeCollected(event: FeeCollected): void {
   if (!event.params.feeCollected.equals(BigInt.zero())) {
     createFeeHistory(
       event.transaction.hash.toHex(),
-      event.transaction.index,
+      event.logIndex,
       event.params.vaultId,
       event.params.feeCollected,
       event.block.timestamp
