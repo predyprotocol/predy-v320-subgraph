@@ -28,7 +28,7 @@ import {
   ensureOpenPosition
 } from './helper'
 
-export function handleOperatorUpdated(event: OperatorUpdated): void { }
+export function handleOperatorUpdated(event: OperatorUpdated): void {}
 
 export function handlePairAdded(event: PairAdded): void {
   const asset = new AssetEntity(event.params.assetId.toString())
@@ -172,7 +172,9 @@ function closeVault(
 
   vault.margin = vault.margin.plus(marginAmount)
   isolatedVault.margin = isolatedVault.margin.minus(marginAmount)
-  isolatedVault.isClosed = true
+  if (!vaultId.equals(isolatedVaultId)) {
+    isolatedVault.isClosed = true
+  }
 
   vault.save()
   isolatedVault.save()
