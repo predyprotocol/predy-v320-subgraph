@@ -6,6 +6,7 @@ type AssetEntity @entity {
   totalBorrow: BigInt! # uint256
   sqrtTotalSupply: BigInt!
   sqrtTotalBorrow: BigInt!
+  rebalanceHistory: [RebalanceHistoryItem!]! @derivedFrom(field: "asset")
   createdAt: BigInt!
   updatedAt: BigInt!
 }
@@ -18,6 +19,7 @@ type VaultEntity @entity {
   isMainVault: Boolean! # bool
   isClosed: Boolean! # bool
   openPositions: [OpenPositionEntity!]! @derivedFrom(field: "vault")
+  history: [TradeHistoryItem!]! @derivedFrom(field: "vault")
 }
 
 type OpenPositionEntity @entity {
@@ -98,4 +100,13 @@ type AggregatedUniswapPriceEntity @entity {
   closeTimestamp: BigInt!
   openPrice: BigInt!
   closePrice: BigInt!
+}
+
+type RebalanceHistoryItem @entity {
+  id: ID!
+  asset: AssetEntity!
+  tickLower: BigInt!
+  tickUpper: BigInt!
+  profit: BigInt!
+  createdAt: BigInt!
 }

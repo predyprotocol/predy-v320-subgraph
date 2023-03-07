@@ -9,12 +9,18 @@ import {
   PositionLiquidated,
   PositionUpdated,
   PositionUpdatedPayoffStruct,
+  Rebalanced,
   TokenSupplied,
   TokenWithdrawn,
   VaultCreated,
   VaultLiquidated
 } from '../generated/Controller/Controller'
-import { AssetEntity, TradeHistoryItem, VaultEntity } from '../generated/schema'
+import {
+  AssetEntity,
+  RebalanceHistoryItem,
+  TradeHistoryItem,
+  VaultEntity
+} from '../generated/schema'
 import {
   createFeeHistory,
   createLiquidationHistory,
@@ -22,7 +28,7 @@ import {
   ensureOpenPosition
 } from './helper'
 
-export function handleOperatorUpdated(event: OperatorUpdated): void {}
+export function handleOperatorUpdated(event: OperatorUpdated): void { }
 
 export function handlePairAdded(event: PairAdded): void {
   const asset = new AssetEntity(event.params.assetId.toString())
@@ -319,4 +325,23 @@ export function handleFeeCollected(event: FeeCollected): void {
       event.block.timestamp
     )
   }
+}
+
+export function handleRebalanced(event: Rebalanced): void {
+  const id =
+    event.transaction.hash.toHex() +
+    '/' +
+    event.transactionLogIndex.toString() +
+    '/' +
+    event.params.assetId.toString()
+
+  const item = new RebalanceHistoryItem(id)
+
+  item.asset = event.params.assetId.toString()
+  item.tickLower = BigInt.fromI32(event.params.tickLower)
+  item.tickUpper = BigInt.fromI32(event.params.tickUpper)
+  item.profit = event.params.profit
+  item.createdAt = event.block.timestamp
+
+  item.save()
 }

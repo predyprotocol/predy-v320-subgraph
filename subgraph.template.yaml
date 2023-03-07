@@ -45,6 +45,8 @@ dataSources:
           handler: handleVaultLiquidated
         - event: FeeCollected(uint256,uint256,int256)
           handler: handleFeeCollected
+        - event: Rebalanced(uint256,int24,int24,int256)
+          handler: handleRebalanced
       file: ./src/Controller.ts
   - kind: ethereum/contract
     name: WethGammaShortStrategy
