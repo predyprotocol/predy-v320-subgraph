@@ -54,12 +54,13 @@ export function createMarginHistory(
 
 export function createFeeHistory(
   txHash: string,
+  logIndex: BigInt,
   vaultId: BigInt,
   fee: BigInt,
   eventTime: BigInt
 ): void {
   const historyItem = new TradeHistoryItem(
-    txHash + '/' + vaultId.toString() + '/fee'
+    txHash + '/' + logIndex.toString() + '/' + vaultId.toString() + '/fee'
   )
 
   historyItem.vault = vaultId.toString()

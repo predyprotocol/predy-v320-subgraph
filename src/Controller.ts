@@ -191,6 +191,7 @@ function closeVault(
 export function handlePositionUpdated(event: PositionUpdated): void {
   updatePosition(
     event.transaction.hash,
+    event.transaction.index,
     event.params.vaultId,
     event.params.assetId,
     event.params.tradeAmount,
@@ -210,6 +211,7 @@ export function handlePositionLiquidated(event: PositionLiquidated): void {
 
   updatePosition(
     event.transaction.hash,
+    event.transaction.index,
     event.params.vaultId,
     event.params.assetId,
     event.params.tradeAmount,
@@ -222,6 +224,7 @@ export function handlePositionLiquidated(event: PositionLiquidated): void {
 
 function updatePosition(
   txHash: Bytes,
+  logIndex: BigInt,
   vaultId: BigInt,
   assetId: BigInt,
   tradeAmount: BigInt,
@@ -262,12 +265,17 @@ function updatePosition(
   }
 
   if (!fee.equals(BigInt.zero())) {
-    createFeeHistory(txHash.toHex(), vaultId, fee, timestamp)
+    createFeeHistory(txHash.toHex(), logIndex, vaultId, fee, timestamp)
   }
 
   if (!tradeAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
-      txHash.toHex() + '/' + vaultId.toString() + '/perp'
+      txHash.toHex() +
+        '/' +
+        logIndex.toString() +
+        '/' +
+        vaultId.toString() +
+        '/perp'
     )
 
     historyItem.vault = vaultId.toString()
@@ -285,7 +293,12 @@ function updatePosition(
 
   if (!tradeSqrtAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
-      txHash.toHex() + '/' + vaultId.toString() + '/sqrt'
+      txHash.toHex() +
+        '/' +
+        logIndex.toString() +
+        '/' +
+        vaultId.toString() +
+        '/sqrt'
     )
 
     historyItem.vault = vaultId.toString()
@@ -322,6 +335,7 @@ export function handleFeeCollected(event: FeeCollected): void {
   if (!event.params.feeCollected.equals(BigInt.zero())) {
     createFeeHistory(
       event.transaction.hash.toHex(),
+      event.transaction.index,
       event.params.vaultId,
       event.params.feeCollected,
       event.block.timestamp
