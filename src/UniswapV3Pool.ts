@@ -1,6 +1,8 @@
+import { BigInt } from '@graphprotocol/graph-ts'
 import { Swap, UniswapV3Pool } from '../generated/UniswapV3Pool/UniswapV3Pool'
 import { updateAggregatedPrice } from './AggregatedPrice'
 import {
+  StrategyStartBlock,
   wbtcGammaShortStrategyContract,
   wethGammaShortStrategyContract
 } from './contracts'
@@ -36,7 +38,7 @@ export function handleSwap(event: Swap): void {
       event.block.timestamp
     )
 
-    if (isNewlyCreated) {
+    if (isNewlyCreated && event.block.number.gt(BigInt.fromU64(StrategyStartBlock))) {
       const wethStrategyPrice = wethGammaShortStrategyContract.getPrice()
       const wbtcStrategyPrice = wbtcGammaShortStrategyContract.getPrice()
 

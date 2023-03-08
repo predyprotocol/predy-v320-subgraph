@@ -17,3 +17,5 @@ export const wethGammaShortStrategyContract = GammaShortStrategy.bind(
 export const wbtcGammaShortStrategyContract = GammaShortStrategy.bind(
   wbtcGammaShortStrategyAddress
 )
+
+export const StrategyStartBlock = {{ strategyStartBlock }}
