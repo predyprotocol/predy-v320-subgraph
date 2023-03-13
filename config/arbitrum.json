@@ -1,11 +1,8 @@
 {
   "network": "arbitrum-one",
-  "assets": [
-    {
-      "Controller": "0x4006A8840F8640A7D8F46D2c3155a58c76eCD56e",
-      "VaultNFT": "0xaA8C588e8aCD1849C04159b492e622A8d6B85b1C",
-      "UniswapV3Pool": "0xc31e54c7a869b9fcbecc14363cf510d1c41fa443",
-      "startBlock": 45340700
-    }
-  ]
+  "Controller": "0xD8ce25aC00Cf12033db4bAC36fcD33759102aBA4",
+  "WethGammaShortStrategy": "0xBF4F21648C0BcECcF707975d44485475BE5D0363",
+  "WethUniswapV3Pool": "0xC31E54c7a869B9FcBEcc14363CF510d1c41fa443",
+  "startBlock": 65000000,
+  "strategyStartBlock": 69380000
 }

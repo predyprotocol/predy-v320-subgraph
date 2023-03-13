@@ -1,11 +1,7 @@
 import { BigInt } from '@graphprotocol/graph-ts'
 import { Swap, UniswapV3Pool } from '../generated/UniswapV3Pool/UniswapV3Pool'
 import { updateAggregatedPrice } from './AggregatedPrice'
-import {
-  StrategyStartBlock,
-  wbtcGammaShortStrategyContract,
-  wethGammaShortStrategyContract
-} from './contracts'
+import { StrategyStartBlock, wethGammaShortStrategyContract } from './contracts'
 import { ensureUniFeeGrowthHourly } from './helper'
 import { day, dayAdjustment, hour, hourAdjustment } from './time'
 
@@ -38,9 +34,11 @@ export function handleSwap(event: Swap): void {
       event.block.timestamp
     )
 
-    if (isNewlyCreated && event.block.number.gt(BigInt.fromU64(StrategyStartBlock))) {
+    if (
+      isNewlyCreated &&
+      event.block.number.gt(BigInt.fromU64(StrategyStartBlock))
+    ) {
       const wethStrategyPrice = wethGammaShortStrategyContract.getPrice()
-      const wbtcStrategyPrice = wbtcGammaShortStrategyContract.getPrice()
 
       updateAggregatedPrice(
         intervalName,
@@ -48,14 +46,6 @@ export function handleSwap(event: Swap): void {
         intervalAdjustment,
         wethGammaShortStrategyContract._address,
         wethStrategyPrice,
-        event.block.timestamp
-      )
-      updateAggregatedPrice(
-        intervalName,
-        intervalLength,
-        intervalAdjustment,
-        wbtcGammaShortStrategyContract._address,
-        wbtcStrategyPrice,
         event.block.timestamp
       )
     }
