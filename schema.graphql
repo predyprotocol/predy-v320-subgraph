@@ -33,6 +33,8 @@ type OpenPositionEntity @entity {
   sqrtRebalanceEntryValueStable: BigInt! # int256
   sqrtRebalanceEntryValueUnderlying: BigInt! # int256
   feeAmount: BigInt! # int256
+  perpUpdatedAt: BigInt!
+  squartUpdatedAt: BigInt!
   createdAt: BigInt!
   updatedAt: BigInt!
 }

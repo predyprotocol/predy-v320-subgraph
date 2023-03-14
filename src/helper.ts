@@ -26,6 +26,8 @@ export function ensureOpenPosition(
     openPosition.sqrtRebalanceEntryValueStable = BigInt.zero()
     openPosition.sqrtRebalanceEntryValueUnderlying = BigInt.zero()
     openPosition.feeAmount = BigInt.zero()
+    openPosition.perpUpdatedAt = eventTime
+    openPosition.squartUpdatedAt = eventTime
   }
 
   openPosition.updatedAt = eventTime

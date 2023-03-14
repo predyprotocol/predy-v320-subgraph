@@ -28,7 +28,7 @@ import {
   ensureOpenPosition
 } from './helper'
 
-export function handleOperatorUpdated(event: OperatorUpdated): void {}
+export function handleOperatorUpdated(event: OperatorUpdated): void { }
 
 export function handlePairAdded(event: PairAdded): void {
   const asset = new AssetEntity(event.params.assetId.toString())
@@ -254,6 +254,14 @@ function updatePosition(
     )
   openPosition.feeAmount = openPosition.feeAmount.plus(fee)
 
+  if (!tradeAmount.equals(BigInt.zero())) {
+    openPosition.perpUpdatedAt = timestamp
+  }
+
+  if (!tradeSqrtAmount.equals(BigInt.zero())) {
+    openPosition.squartUpdatedAt = timestamp
+  }
+
   openPosition.save()
 
   const vault = VaultEntity.load(vaultId.toString())
@@ -271,11 +279,11 @@ function updatePosition(
   if (!tradeAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-        '/' +
-        logIndex.toString() +
-        '/' +
-        vaultId.toString() +
-        '/perp'
+      '/' +
+      logIndex.toString() +
+      '/' +
+      vaultId.toString() +
+      '/perp'
     )
 
     historyItem.vault = vaultId.toString()
@@ -294,11 +302,11 @@ function updatePosition(
   if (!tradeSqrtAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-        '/' +
-        logIndex.toString() +
-        '/' +
-        vaultId.toString() +
-        '/sqrt'
+      '/' +
+      logIndex.toString() +
+      '/' +
+      vaultId.toString() +
+      '/sqrt'
     )
 
     historyItem.vault = vaultId.toString()
