@@ -1,6 +1,7 @@
-import { BigInt, Bytes, log } from '@graphprotocol/graph-ts'
+import { BigInt, Bytes } from '@graphprotocol/graph-ts'
 import {
   FeeCollected,
+  InterestGrowthUpdated,
   IsolatedVaultClosed,
   IsolatedVaultOpened,
   MarginUpdated,
@@ -16,17 +17,18 @@ import {
   VaultLiquidated
 } from '../generated/Controller/Controller'
 import {
-  AssetEntity,
-  RebalanceHistoryItem,
+  AssetEntity, RebalanceHistoryItem,
   TradeHistoryItem,
   VaultEntity
 } from '../generated/schema'
 import {
   createFeeHistory,
   createLiquidationHistory,
-  createMarginHistory,
-  ensureOpenPosition
+  createMarginHistory, ensureInterestGrowth1Tx, ensureInterestGrowth2Tx, ensureOpenPosition,
+  ensureTotalTokens1Entity,
+  ensureTotalTokens2Entity
 } from './helper'
+import { getSqrtTotalBorrow, getSqrtTotalSupply, getTotalBorrow, getTotalSupply, updateFeeRevenue, updatePremiumRevenue, updateProtocolRevenue, updateTokenRevenue } from './revenue'
 
 export function handleOperatorUpdated(event: OperatorUpdated): void { }
 
@@ -368,4 +370,50 @@ export function handleRebalanced(event: Rebalanced): void {
   item.createdAt = event.block.timestamp
 
   item.save()
+}
+
+export function handleInterestGrowthUpdated(event: InterestGrowthUpdated): void {
+
+  const totalTokens1 = ensureTotalTokens1Entity(event.block.timestamp)
+  const totalTokens2 = ensureTotalTokens2Entity(event.block.timestamp)
+
+  if (
+    totalTokens1.growthCount.gt(BigInt.zero()) &&
+    totalTokens2.growthCount.gt(BigInt.zero())
+  ) {
+    updateTokenRevenue(event, totalTokens1, totalTokens2)
+    updatePremiumRevenue(event, totalTokens2)
+    updateFeeRevenue(event, totalTokens2)
+  }
+
+  // Create InterestGrowthTx Entity
+  if (event.params.assetId.equals(BigInt.fromI32(1))) {
+    totalTokens1.growthCount = totalTokens1.growthCount.plus(BigInt.fromU32(1))
+    totalTokens1.save()
+    const entity = ensureInterestGrowth1Tx(
+      totalTokens1.growthCount,
+      event.block.timestamp
+    )
+    entity.accumulatedInterests =  event.params.assetGrowth.times(getTotalSupply(event))
+    entity.accumulatedDebts = event.params.debtGrowth.times(getTotalBorrow(event))
+    entity.save()
+  } else if (event.params.assetId.equals(BigInt.fromI32(1))) { 
+    totalTokens2.growthCount = totalTokens2.growthCount.plus(BigInt.fromU32(1))
+    totalTokens2.save()
+    const entity = ensureInterestGrowth2Tx(
+      totalTokens2.growthCount,
+      event.block.timestamp
+    )
+    entity.accumulatedPremiumSupply = event.params.supplyPremiumGrowth.times(getSqrtTotalSupply(event))
+    entity.accumulatedPremiumBorrow = event.params.borrowPremiumGrowth.times(getSqrtTotalBorrow(event))
+    entity.accumulatedFee0 = event.params.fee0Growth.times(
+      getSqrtTotalSupply(event)
+    )
+    entity.accumulatedFee1 = event.params.fee1Growth.times(
+      getSqrtTotalSupply(event)
+    )
+    entity.save()
+  }
+  
+  updateProtocolRevenue(event)
 }

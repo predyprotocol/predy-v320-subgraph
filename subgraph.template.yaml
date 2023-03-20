@@ -47,6 +47,8 @@ dataSources:
           handler: handleFeeCollected
         - event: Rebalanced(uint256,int24,int24,int256)
           handler: handleRebalanced
+        - event: InterestGrowthUpdated(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleInterestGrowthUpdated
       file: ./src/Controller.ts
   - kind: ethereum/contract
     name: WethGammaShortStrategy
