@@ -138,33 +138,19 @@ type AccumulatedProtocolFeeDaily @entity {
 }
 
 type TotalTokensEntity @entity {
-  id: ID!
+  id: ID! # total - assetId
   growthCount: BigInt!
   createdAt: BigInt!
   updatedAt: BigInt!
 }
 
 type InterestGrowthTx @entity {
-  id: ID! # txHash
-  assetId: BigInt!
-  assetGrowth: BigInt!
-  debtGrowth: BigInt!
-  supplyPremiumGrowth: BigInt!
-  borrowPremiumGrowth: BigInt!
-  fee0Growth: BigInt!
-  fee1Growth: BigInt!
-  accumulatedProtocolRevenue: BigInt!
-  createdAt: BigInt!
+  id: ID! # assetId - TotalTokensEntity.growthCount
   accumulatedInterests: BigInt!
   accumulatedDebts: BigInt!
   accumulatedPremiumSupply: BigInt!
   accumulatedPremiumBorrow: BigInt!
   accumulatedFee0: BigInt!
   accumulatedFee1: BigInt!
-}
-
-type InterestGrowthDaily @entity {
-  id: ID! # yyyy-MM-dd
   createdAt: BigInt!
-  updatedAt: BigInt!
 }

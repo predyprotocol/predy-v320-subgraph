@@ -174,6 +174,12 @@ export function ensureInterestGrowthTx(
 
   if (entity == null) {
     entity = new InterestGrowthTx(id)
+    entity.accumulatedInterests = BigInt.zero()
+    entity.accumulatedDebts = BigInt.zero()
+    entity.accumulatedPremiumSupply = BigInt.zero()
+    entity.accumulatedPremiumBorrow = BigInt.zero()
+    entity.accumulatedFee0 = BigInt.zero()
+    entity.accumulatedFee1 = BigInt.zero()
     entity.createdAt = eventTime
   }
 
