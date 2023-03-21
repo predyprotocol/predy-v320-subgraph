@@ -1,7 +1,7 @@
 import {
   DepositedToStrategy,
   WithdrawnFromStrategy
-} from '../generated/GammaShortStrategy/GammaShortStrategy'
+} from '../generated/WethGammaShortStrategy/GammaShortStrategy'
 import { StrategyUserHistoryItem } from '../generated/schema'
 
 export function handleDepositedToStrategy(event: DepositedToStrategy): void {

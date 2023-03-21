@@ -1,7 +1,11 @@
 import { BigInt } from '@graphprotocol/graph-ts'
 
 import {
+  AccumulatedProtocolFeeDaily,
+  InterestGrowthTx,
+  LPRevenueDaily,
   OpenPositionEntity,
+  TotalTokensEntity,
   TradeHistoryItem,
   UniFeeGrowthHourly
 } from '../generated/schema'
@@ -115,4 +119,89 @@ function toHourlyId(timestamp: BigInt): string {
   let open = timestamp.minus(excess)
 
   return open.toString()
+}
+
+function toISODateString(timestamp: BigInt): string {
+  const date = new Date(timestamp.toI64() * 1000).toISOString()
+  return date.substring(0, date.indexOf('T'))
+}
+
+export function ensureLPRevenueDaily(eventTime: BigInt): LPRevenueDaily {
+  const id = toISODateString(eventTime)
+  let entity = LPRevenueDaily.load(id)
+
+  if (entity == null) {
+    entity = new LPRevenueDaily(id)
+    entity.fee0 = BigInt.fromI32(0)
+    entity.fee1 = BigInt.fromI32(0)
+    entity.premiumBorrow = BigInt.fromI32(0)
+    entity.premiumSupply = BigInt.fromI32(0)
+    entity.supplyInterest0 = BigInt.fromI32(0)
+    entity.supplyInterest1 = BigInt.fromI32(0)
+    entity.borrowInterest0 = BigInt.fromI32(0)
+    entity.borrowInterest1 = BigInt.fromI32(0)
+    entity.createdAt = eventTime
+    entity.updatedAt = eventTime
+  }
+
+  return entity
+}
+
+export function ensureTotalTokensEntity(
+  assetId: BigInt,
+  eventTime: BigInt
+): TotalTokensEntity {
+  const id = `total-${assetId.toString()}`
+  let entity = TotalTokensEntity.load(id)
+
+  if (entity == null) {
+    entity = new TotalTokensEntity(id)
+    entity.growthCount = BigInt.zero()
+    entity.createdAt = eventTime
+    entity.updatedAt = eventTime
+  }
+
+  return entity
+}
+
+export function ensureInterestGrowthTx(
+  assetId: BigInt,
+  count: BigInt,
+  eventTime: BigInt
+): InterestGrowthTx {
+  const id = `${assetId.toString()}-${count.toString()}`
+  let entity = InterestGrowthTx.load(id)
+
+  if (entity == null) {
+    entity = new InterestGrowthTx(id)
+    entity.accumulatedInterests = BigInt.zero()
+    entity.accumulatedDebts = BigInt.zero()
+    entity.accumulatedPremiumSupply = BigInt.zero()
+    entity.accumulatedPremiumBorrow = BigInt.zero()
+    entity.accumulatedFee0 = BigInt.zero()
+    entity.accumulatedFee1 = BigInt.zero()
+    entity.createdAt = eventTime
+  }
+
+  return entity
+}
+
+
+export function ensureAccumulatedProtocolFeeDaily(
+  eventTime: BigInt
+): AccumulatedProtocolFeeDaily {
+  const id = toISODateString(eventTime)
+  let entity = AccumulatedProtocolFeeDaily.load(id)
+
+  if (entity == null) {
+    entity = new AccumulatedProtocolFeeDaily(id)
+    entity.accumulatedProtocolFee0 = BigInt.fromI32(0)
+    entity.accumulatedProtocolFee1 = BigInt.fromI32(0)
+    entity.withdrawnProtocolFee0 = BigInt.fromI32(0)
+    entity.withdrawnProtocolFee1 = BigInt.fromI32(0)
+    entity.createdAt = eventTime
+    entity.updatedAt = eventTime
+  }
+
+  return entity
 }

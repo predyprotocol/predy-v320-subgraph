@@ -1,6 +1,7 @@
-import { BigInt, Bytes, log } from '@graphprotocol/graph-ts'
+import { BigInt, Bytes } from '@graphprotocol/graph-ts'
 import {
   FeeCollected,
+  InterestGrowthUpdated,
   IsolatedVaultClosed,
   IsolatedVaultOpened,
   MarginUpdated,
@@ -16,8 +17,7 @@ import {
   VaultLiquidated
 } from '../generated/Controller/Controller'
 import {
-  AssetEntity,
-  RebalanceHistoryItem,
+  AssetEntity, RebalanceHistoryItem,
   TradeHistoryItem,
   VaultEntity
 } from '../generated/schema'
@@ -25,8 +25,11 @@ import {
   createFeeHistory,
   createLiquidationHistory,
   createMarginHistory,
-  ensureOpenPosition
+  ensureInterestGrowthTx,
+  ensureOpenPosition,
+  ensureTotalTokensEntity
 } from './helper'
+import { getSqrtTotalBorrow, getSqrtTotalSupply, getTotalBorrow, getTotalSupply, updateFeeRevenue, updatePremiumRevenue, updateProtocolRevenue, updateTokenRevenue } from './revenue'
 
 export function handleOperatorUpdated(event: OperatorUpdated): void { }
 
@@ -368,4 +371,55 @@ export function handleRebalanced(event: Rebalanced): void {
   item.createdAt = event.block.timestamp
 
   item.save()
+}
+
+export function handleInterestGrowthUpdated(event: InterestGrowthUpdated): void {
+  const assetId = event.params.assetId
+
+  const totalTokens = ensureTotalTokensEntity(
+    event.params.assetId,
+    event.block.timestamp
+  )
+
+  if (totalTokens.growthCount.gt(BigInt.zero())) {
+    updateTokenRevenue(event, totalTokens)
+  }
+
+  if (assetId.notEqual(BigInt.fromI32(1))) {
+    updatePremiumRevenue(event, totalTokens)
+    updateFeeRevenue(event, totalTokens)
+  }
+
+  // Create InterestGrowthTx Entity
+  totalTokens.growthCount = totalTokens.growthCount.plus(BigInt.fromU32(1))
+  totalTokens.save()
+  const entity = ensureInterestGrowthTx(
+    event.params.assetId,
+    totalTokens.growthCount,
+    event.block.timestamp
+  )
+  if (assetId.equals(BigInt.fromI32(1))) {
+    entity.accumulatedInterests = event.params.assetGrowth.times(
+      getTotalSupply(assetId)
+    )
+    entity.accumulatedDebts = event.params.debtGrowth.times(
+      getTotalBorrow(assetId)
+    )
+  } else {
+    entity.accumulatedPremiumSupply = event.params.supplyPremiumGrowth.times(
+      getSqrtTotalSupply(assetId)
+    )
+    entity.accumulatedPremiumBorrow = event.params.borrowPremiumGrowth.times(
+      getSqrtTotalBorrow(assetId)
+    )
+    entity.accumulatedFee0 = event.params.fee0Growth.times(
+      getSqrtTotalSupply(assetId)
+    )
+    entity.accumulatedFee1 = event.params.fee1Growth.times(
+      getSqrtTotalSupply(assetId)
+    )
+  }
+  entity.save()
+
+  updateProtocolRevenue(event)
 }

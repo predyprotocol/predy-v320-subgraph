@@ -1,5 +1,5 @@
 import { BigInt } from '@graphprotocol/graph-ts'
-import { Swap, UniswapV3Pool } from '../generated/UniswapV3Pool/UniswapV3Pool'
+import { Swap, UniswapV3Pool } from '../generated/WethUniswapV3Pool/UniswapV3Pool'
 import { updateAggregatedPrice } from './AggregatedPrice'
 import { StrategyStartBlock, wethGammaShortStrategyContract } from './contracts'
 import { ensureUniFeeGrowthHourly } from './helper'

@@ -112,3 +112,45 @@ type RebalanceHistoryItem @entity {
   profit: BigInt!
   createdAt: BigInt!
 }
+
+type LPRevenueDaily @entity {
+  id: ID! # yyyy-MM-dd
+  fee0: BigInt!
+  fee1: BigInt!
+  premiumSupply: BigInt!
+  premiumBorrow: BigInt!
+  supplyInterest0: BigInt!
+  supplyInterest1: BigInt!
+  borrowInterest0: BigInt!
+  borrowInterest1: BigInt!
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
+
+type AccumulatedProtocolFeeDaily @entity {
+  id: ID! # yyyy-MM-dd
+  accumulatedProtocolFee0: BigInt!
+  accumulatedProtocolFee1: BigInt!
+  withdrawnProtocolFee0: BigInt!
+  withdrawnProtocolFee1: BigInt!
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
+
+type TotalTokensEntity @entity {
+  id: ID! # total - assetId
+  growthCount: BigInt!
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
+
+type InterestGrowthTx @entity {
+  id: ID! # assetId - TotalTokensEntity.growthCount
+  accumulatedInterests: BigInt!
+  accumulatedDebts: BigInt!
+  accumulatedPremiumSupply: BigInt!
+  accumulatedPremiumBorrow: BigInt!
+  accumulatedFee0: BigInt!
+  accumulatedFee1: BigInt!
+  createdAt: BigInt!
+}
