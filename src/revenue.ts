@@ -2,24 +2,30 @@ import {
   InterestGrowthUpdated  
 } from '../generated/Controller/Controller'
 import * as schema from '../generated/schema'
-import { ensureAccumulatedProtocolFeeDaily, ensureInterestGrowth1Tx, ensureInterestGrowth2Tx, ensureLPRevenueDaily, ensureTotalTokens1Entity, ensureTotalTokens2Entity } from './helper'
+import {
+  ensureAccumulatedProtocolFeeDaily,
+  ensureInterestGrowthTx,
+  ensureLPRevenueDaily,
+} from './helper'
 import { ONE } from './constants'
 import { BigInt } from '@graphprotocol/graph-ts'
 import { controllerContract } from './contracts'
-import { LPRevenueDaily, TotalTokens1Entity, TotalTokens2Entity } from '../generated/schema'
+import {
+  LPRevenueDaily, TotalTokensEntity,
+} from '../generated/schema'
 
-export function getTotalSupply(event: InterestGrowthUpdated): BigInt  {
-  const asset = controllerContract.getAsset(event.params.assetId)
+export function getTotalSupply(assetId: BigInt): BigInt {
+  const asset = controllerContract.getAsset(assetId)
   const tokenStatus = asset.tokenStatus
   const totalSupply = tokenStatus.totalCompoundDeposited
     .times(tokenStatus.assetScaler)
     .div(ONE)
-    .plus(tokenStatus.totalNormalDeposited)  
+    .plus(tokenStatus.totalNormalDeposited)
   return totalSupply
 }
 
-export function getTotalBorrow(event: InterestGrowthUpdated): BigInt {
-  const asset = controllerContract.getAsset(event.params.assetId)
+export function getTotalBorrow(assetId: BigInt): BigInt {
+  const asset = controllerContract.getAsset(assetId)
   const tokenStatus = asset.tokenStatus
   const totalBorrow = tokenStatus.totalCompoundBorrowed
     .times(tokenStatus.debtScaler)
@@ -28,15 +34,15 @@ export function getTotalBorrow(event: InterestGrowthUpdated): BigInt {
   return totalBorrow
 }
 
-export function getSqrtTotalSupply(event: InterestGrowthUpdated): BigInt {
-  const asset = controllerContract.getAsset(event.params.assetId)
+export function getSqrtTotalSupply(assetId: BigInt): BigInt {
+  const asset = controllerContract.getAsset(assetId)
   const sqrtAssetStatus = asset.sqrtAssetStatus
   const sqrtTotalSupply = sqrtAssetStatus.totalAmount
   return sqrtTotalSupply
 }
 
-export function getSqrtTotalBorrow(event: InterestGrowthUpdated): BigInt {
-  const asset = controllerContract.getAsset(event.params.assetId)
+export function getSqrtTotalBorrow(assetId: BigInt): BigInt {
+  const asset = controllerContract.getAsset(assetId)
   const sqrtAssetStatus = asset.sqrtAssetStatus
   const sqrtTotalBorrow = sqrtAssetStatus.borrowedAmount
   return sqrtTotalBorrow
@@ -44,69 +50,43 @@ export function getSqrtTotalBorrow(event: InterestGrowthUpdated): BigInt {
 
 export function updateTokenRevenue(
   event: InterestGrowthUpdated,
-  totalToken1: TotalTokens1Entity,
-  totalToken2: TotalTokens2Entity
+  totalTokens: TotalTokensEntity
 ): schema.LPRevenueDaily {
+  const assetId = event.params.assetId
+
   const lpRevenuDaily = ensureLPRevenueDaily(event.block.timestamp)
 
-  const totalSupply = getTotalSupply(event)
-  const totalBorrow = getTotalBorrow(event)
+  const totalSupply = getTotalSupply(assetId)
+  const totalBorrow = getTotalBorrow(assetId)
 
-  if (event.params.assetId.equals(BigInt.fromI32(1))) {
-    const totalTokens = totalToken1
-    const prevEntity = ensureInterestGrowth1Tx(
-      totalTokens.growthCount,
-      event.block.timestamp
-    )
-    // Token Fee
-    // USDC
-    const accumulatedInterests = event.params.assetGrowth.times(totalSupply)
-    const prevAccumulatedInterests = prevEntity.accumulatedInterests
+  const prevEntity = ensureInterestGrowthTx(
+    assetId,
+    totalTokens.growthCount,
+    event.block.timestamp
+  )
 
+  // Token Fee
+  const accumulatedInterests = event.params.assetGrowth.times(totalSupply)
+  const prevAccumulatedInterests = prevEntity.accumulatedInterests
+
+  const accumulatedDebts = event.params.debtGrowth.times(totalBorrow)
+  const prevAccumulatedDebts = prevEntity.accumulatedDebts
+
+  if (assetId.equals(BigInt.fromI32(1))) {
     lpRevenuDaily.supplyInterest0 = lpRevenuDaily.supplyInterest0.plus(
       accumulatedInterests.minus(prevAccumulatedInterests)
     )
-
-    const accumulatedDebts = event.params.debtGrowth.times(totalBorrow)
-    const prevAccumulatedDebts = prevEntity.accumulatedDebts
-
     lpRevenuDaily.borrowInterest0 = lpRevenuDaily.borrowInterest0.plus(
       accumulatedDebts.minus(prevAccumulatedDebts)
     )
-
-    // Create ensureInterestGrowthTx
-    const entity = ensureInterestGrowth1Tx(
-      totalTokens.growthCount.plus(BigInt.fromU32(1)),
-      event.block.timestamp
-    )
-
-    entity.accumulatedInterests = accumulatedInterests
-    entity.accumulatedDebts = accumulatedDebts
-    entity.save()
-  } else if (event.params.assetId.equals(BigInt.fromI32(2))) {
-    const totalTokens = totalToken2
-    const prevEntity = ensureInterestGrowth2Tx(
-      totalTokens.growthCount,
-      event.block.timestamp
-    )
-
-    // Token Fee
-    // ETH
-    const accumulatedInterests = event.params.assetGrowth.times(totalSupply)
-    const prevAccumulatedInterests = prevEntity.accumulatedInterests
-
+  } else if (assetId.equals(BigInt.fromI32(2))) {
     lpRevenuDaily.supplyInterest1 = lpRevenuDaily.supplyInterest1.plus(
       accumulatedInterests.minus(prevAccumulatedInterests)
     )
-
-    const accumulatedDebts = event.params.debtGrowth.times(totalBorrow)
-    const prevAccumulatedDebts = prevEntity.accumulatedDebts
-
     lpRevenuDaily.borrowInterest1 = lpRevenuDaily.borrowInterest1.plus(
       accumulatedDebts.minus(prevAccumulatedDebts)
     )
   }
-
 
   lpRevenuDaily.updatedAt = event.block.timestamp
 
@@ -115,35 +95,22 @@ export function updateTokenRevenue(
   return lpRevenuDaily
 }
 
-
 export function updatePremiumRevenue(
   event: InterestGrowthUpdated,
-  totalToken2: TotalTokens2Entity
+  totalTokens: TotalTokensEntity
 ): LPRevenueDaily {
+  const assetId = event.params.assetId
+
   const lpRevenuDaily = ensureLPRevenueDaily(event.block.timestamp)
 
-  const asset = controllerContract.getAsset(event.params.assetId)
-  const assetId = asset.id
+  const prevEntity = ensureInterestGrowthTx(
+    assetId,
+    totalTokens.growthCount,
+    event.block.timestamp
+  )
 
-  if (assetId.equals(BigInt.fromI32(1))) {
-    // Nothing to do
-    return lpRevenuDaily
-  }
-
-  let prevEntity: schema.InterestGrowth2Tx
-  let totalTokens: TotalTokens2Entity
-  if (assetId.equals(BigInt.fromI32(2))) {
-    totalTokens = totalToken2
-    prevEntity = ensureInterestGrowth2Tx(
-      totalTokens.growthCount,
-      event.block.timestamp
-    )
-  } else {
-    return lpRevenuDaily
-  }
-
-  const sqrtTotalSupply = getSqrtTotalSupply(event)
-  const sqrtTotalBorrow = getSqrtTotalBorrow(event)
+  const sqrtTotalSupply = getSqrtTotalSupply(assetId)
+  const sqrtTotalBorrow = getSqrtTotalBorrow(assetId)
 
   const accumulatedPremiumSupply =
     event.params.supplyPremiumGrowth.times(sqrtTotalSupply)
@@ -169,30 +136,20 @@ export function updatePremiumRevenue(
 
 export function updateFeeRevenue(
   event: InterestGrowthUpdated,
-  totalToken2: TotalTokens2Entity
+  totalTokens: TotalTokensEntity
 ): LPRevenueDaily {
+  const assetId = event.params.assetId
+
   const lpRevenuDaily = ensureLPRevenueDaily(event.block.timestamp)
 
-  if (event.params.assetId.equals(BigInt.fromI32(1))) {
-    // Nothing to do
-    return lpRevenuDaily
-  }
+  const prevEntity = ensureInterestGrowthTx(
+    assetId,
+    totalTokens.growthCount,
+    event.block.timestamp
+  )
 
-  let prevEntity: schema.InterestGrowth2Tx
-  let totalTokens: TotalTokens2Entity
-  if (event.params.assetId.equals(BigInt.fromI32(2))) {
-    totalTokens = totalToken2
-    prevEntity = ensureInterestGrowth2Tx(
-      totalTokens.growthCount,
-      event.block.timestamp
-    )
-  } else {
-    return lpRevenuDaily
-  }
+  const sqrtTotalSupply = getSqrtTotalSupply(assetId)
 
-  const sqrtTotalSupply = getSqrtTotalSupply(event)
-
-  // Fee
   const fee0 = event.params.fee0Growth.times(sqrtTotalSupply)
   const fee1 = event.params.fee1Growth.times(sqrtTotalSupply)
 
@@ -212,10 +169,9 @@ export function updateFeeRevenue(
 export function updateProtocolRevenue(
   event: InterestGrowthUpdated
 ): schema.AccumulatedProtocolFeeDaily {
-  const entity = ensureAccumulatedProtocolFeeDaily(event.block.timestamp)
+  const assetId = event.params.assetId
 
-  const asset = controllerContract.getAsset(event.params.assetId)
-  const assetId = asset.id
+  const entity = ensureAccumulatedProtocolFeeDaily(event.block.timestamp)
 
   if (assetId.equals(BigInt.fromI32(1))) {
     // USDC

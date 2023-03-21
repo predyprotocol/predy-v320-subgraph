@@ -2,12 +2,10 @@ import { BigInt } from '@graphprotocol/graph-ts'
 
 import {
   AccumulatedProtocolFeeDaily,
-  InterestGrowth1Tx,
-  InterestGrowth2Tx,
+  InterestGrowthTx,
   LPRevenueDaily,
   OpenPositionEntity,
-  TotalTokens1Entity,
-  TotalTokens2Entity,
+  TotalTokensEntity,
   TradeHistoryItem,
   UniFeeGrowthHourly
 } from '../generated/schema'
@@ -149,12 +147,15 @@ export function ensureLPRevenueDaily(eventTime: BigInt): LPRevenueDaily {
   return entity
 }
 
-export function ensureTotalTokens1Entity(eventTime: BigInt): TotalTokens1Entity {
-  const id = 'total'
-  let entity = TotalTokens1Entity.load(id)
+export function ensureTotalTokensEntity(
+  assetId: BigInt,
+  eventTime: BigInt
+): TotalTokensEntity {
+  const id = `total-${assetId.toString()}`
+  let entity = TotalTokensEntity.load(id)
 
   if (entity == null) {
-    entity = new TotalTokens1Entity(id)
+    entity = new TotalTokensEntity(id)
     entity.growthCount = BigInt.zero()
     entity.createdAt = eventTime
     entity.updatedAt = eventTime
@@ -163,49 +164,22 @@ export function ensureTotalTokens1Entity(eventTime: BigInt): TotalTokens1Entity 
   return entity
 }
 
-export function ensureTotalTokens2Entity(eventTime: BigInt): TotalTokens2Entity {
-  const id = 'total'
-  let entity = TotalTokens2Entity.load(id)
-
-  if (entity == null) {
-    entity = new TotalTokens2Entity(id)
-    entity.growthCount = BigInt.zero()
-    entity.createdAt = eventTime
-    entity.updatedAt = eventTime
-  }
-
-  return entity
-}
-
-export function ensureInterestGrowth1Tx(
+export function ensureInterestGrowthTx(
+  assetId: BigInt,
   count: BigInt,
   eventTime: BigInt
-): InterestGrowth1Tx {
-  const id = count.toString()
-  let entity = InterestGrowth1Tx.load(id)
+): InterestGrowthTx {
+  const id = `${assetId.toString()}-${count.toString()}`
+  let entity = InterestGrowthTx.load(id)
 
   if (entity == null) {
-    entity = new InterestGrowth1Tx(id)
+    entity = new InterestGrowthTx(id)
     entity.createdAt = eventTime
   }
 
   return entity
 }
 
-export function ensureInterestGrowth2Tx(
-  count: BigInt,
-  eventTime: BigInt
-): InterestGrowth2Tx {
-  const id = count.toString()
-  let entity = InterestGrowth2Tx.load(id)
-
-  if (entity == null) {
-    entity = new InterestGrowth2Tx(id)
-    entity.createdAt = eventTime
-  }
-
-  return entity
-}
 
 export function ensureAccumulatedProtocolFeeDaily(
   eventTime: BigInt
