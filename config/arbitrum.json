@@ -1,8 +1,8 @@
 {
   "network": "arbitrum-one",
   "Controller": "0x68a154fB3e8ff6e4DA10ECd54DEF25D9149DDBDE",
-  "WethGammaShortStrategy": "0xFE607c79e935FdF5063DDc524e7A0E1676E8f73d",
+  "WethGammaShortStrategy": "0xea131FB328a95353Fa8461C1365D3293b501E080",
   "WethUniswapV3Pool": "0xC31E54c7a869B9FcBEcc14363CF510d1c41fa443",
   "startBlock": 65800000,
-  "strategyStartBlock": 69525000
+  "strategyStartBlock": 72367909
 }
