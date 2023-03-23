@@ -26,10 +26,13 @@ import {
   createLiquidationHistory,
   createMarginHistory,
   ensureInterestGrowthTx,
+  ensureLatestTokenStatus,
   ensureOpenPosition,
   ensureTotalTokensEntity
 } from './helper'
-import { getSqrtTotalBorrow, getSqrtTotalSupply, getTotalBorrow, getTotalSupply, updateFeeRevenue, updatePremiumRevenue, updateProtocolRevenue, updateTokenRevenue } from './revenue'
+import { updateFeeRevenue, updatePremiumRevenue, updateProtocolRevenue, updateTokenRevenue } from './revenue'
+import { controllerContract } from './contracts'
+import { ONE } from './constants'
 
 export function handleOperatorUpdated(event: OperatorUpdated): void { }
 
@@ -376,16 +379,23 @@ export function handleRebalanced(event: Rebalanced): void {
 export function handleInterestGrowthUpdated(event: InterestGrowthUpdated): void {
   const assetId = event.params.assetId
 
-  const totalTokens = ensureTotalTokensEntity(
-    event.params.assetId,
-    event.block.timestamp
-  )
+  const totalTokens = ensureTotalTokensEntity(assetId, event.block.timestamp)
 
-  if (totalTokens.growthCount.gt(BigInt.zero())) {
+  const latestTokenStatus = ensureLatestTokenStatus(assetId, event.block.timestamp)
+
+  if (
+    totalTokens.growthCount.gt(BigInt.zero()) &&
+    latestTokenStatus.totalSupply.gt(BigInt.zero()) &&
+    latestTokenStatus.totalBorrow.gt(BigInt.zero())
+  ) {
     updateTokenRevenue(event, totalTokens)
   }
 
-  if (assetId.notEqual(BigInt.fromI32(1))) {
+  if (
+    assetId.notEqual(BigInt.fromI32(1)) &&
+    latestTokenStatus.sqrtTotalSupply.gt(BigInt.zero()) &&
+    latestTokenStatus.sqrtTotalBorrow.gt(BigInt.zero())
+  ) {
     updatePremiumRevenue(event, totalTokens)
     updateFeeRevenue(event, totalTokens)
   }
@@ -394,32 +404,55 @@ export function handleInterestGrowthUpdated(event: InterestGrowthUpdated): void 
   totalTokens.growthCount = totalTokens.growthCount.plus(BigInt.fromU32(1))
   totalTokens.save()
   const entity = ensureInterestGrowthTx(
-    event.params.assetId,
+    assetId,
     totalTokens.growthCount,
     event.block.timestamp
   )
-  if (assetId.equals(BigInt.fromI32(1))) {
-    entity.accumulatedInterests = event.params.assetGrowth.times(
-      getTotalSupply(assetId)
-    )
-    entity.accumulatedDebts = event.params.debtGrowth.times(
-      getTotalBorrow(assetId)
-    )
-  } else {
+
+  entity.accumulatedInterests = event.params.assetGrowth.times(
+    latestTokenStatus.totalSupply
+  )
+  entity.accumulatedDebts = event.params.debtGrowth.times(
+    latestTokenStatus.totalBorrow
+  )
+
+  if (assetId.notEqual(BigInt.fromI32(1))) {
     entity.accumulatedPremiumSupply = event.params.supplyPremiumGrowth.times(
-      getSqrtTotalSupply(assetId)
+      latestTokenStatus.sqrtTotalSupply
     )
     entity.accumulatedPremiumBorrow = event.params.borrowPremiumGrowth.times(
-      getSqrtTotalBorrow(assetId)
+      latestTokenStatus.sqrtTotalBorrow
     )
     entity.accumulatedFee0 = event.params.fee0Growth.times(
-      getSqrtTotalSupply(assetId)
+      latestTokenStatus.sqrtTotalSupply
     )
     entity.accumulatedFee1 = event.params.fee1Growth.times(
-      getSqrtTotalSupply(assetId)
+      latestTokenStatus.sqrtTotalSupply
     )
   }
   entity.save()
 
   updateProtocolRevenue(event)
+
+  // Update latestTokenStatus, it will be used when this handler be called next time.
+  const asset = controllerContract.getAsset(assetId)
+  const tokenStatus = asset.tokenStatus
+
+  latestTokenStatus.totalSupply = tokenStatus.totalCompoundDeposited
+    .times(tokenStatus.assetScaler)
+    .div(ONE)
+    .plus(tokenStatus.totalNormalDeposited)
+  latestTokenStatus.totalBorrow = tokenStatus.totalCompoundBorrowed
+    .times(tokenStatus.debtScaler)
+    .div(ONE)
+    .plus(tokenStatus.totalNormalBorrowed)
+
+  if (assetId.notEqual(BigInt.fromI32(1))) { 
+    const sqrtAssetStatus = asset.sqrtAssetStatus
+    latestTokenStatus.sqrtTotalSupply = sqrtAssetStatus.totalAmount
+    latestTokenStatus.sqrtTotalBorrow = sqrtAssetStatus.borrowedAmount
+  }
+
+  latestTokenStatus.updatedAt = event.block.timestamp
+  latestTokenStatus.save()
 }

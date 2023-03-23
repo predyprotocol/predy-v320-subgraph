@@ -154,3 +154,12 @@ type InterestGrowthTx @entity {
   accumulatedFee1: BigInt!
   createdAt: BigInt!
 }
+
+type LatestTokenStatus @entity {
+  id: ID! # latest - assetId
+  totalSupply: BigInt!
+  totalBorrow: BigInt!
+  sqrtTotalSupply: BigInt!
+  sqrtTotalBorrow: BigInt!
+  updatedAt: BigInt!
+}

@@ -4,6 +4,7 @@ import {
   AccumulatedProtocolFeeDaily,
   InterestGrowthTx,
   LPRevenueDaily,
+  LatestTokenStatus,
   OpenPositionEntity,
   TotalTokensEntity,
   TradeHistoryItem,
@@ -204,4 +205,20 @@ export function ensureAccumulatedProtocolFeeDaily(
   }
 
   return entity
+}
+
+export function ensureLatestTokenStatus(assetId: BigInt, eventTime: BigInt): LatestTokenStatus {
+   const id = `latest-${assetId}`
+   let entity = LatestTokenStatus.load(id)
+
+   if (entity == null) {
+     entity = new LatestTokenStatus(id)
+     entity.totalSupply = BigInt.zero()
+     entity.totalBorrow = BigInt.zero()
+     entity.sqrtTotalSupply = BigInt.zero()
+     entity.sqrtTotalBorrow = BigInt.zero()
+     entity.updatedAt = eventTime
+   }
+
+   return entity
 }

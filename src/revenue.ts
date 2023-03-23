@@ -6,6 +6,7 @@ import {
   ensureAccumulatedProtocolFeeDaily,
   ensureInterestGrowthTx,
   ensureLPRevenueDaily,
+  ensureLatestTokenStatus,
 } from './helper'
 import { ONE } from './constants'
 import { BigInt } from '@graphprotocol/graph-ts'
@@ -14,39 +15,6 @@ import {
   LPRevenueDaily, TotalTokensEntity,
 } from '../generated/schema'
 
-export function getTotalSupply(assetId: BigInt): BigInt {
-  const asset = controllerContract.getAsset(assetId)
-  const tokenStatus = asset.tokenStatus
-  const totalSupply = tokenStatus.totalCompoundDeposited
-    .times(tokenStatus.assetScaler)
-    .div(ONE)
-    .plus(tokenStatus.totalNormalDeposited)
-  return totalSupply
-}
-
-export function getTotalBorrow(assetId: BigInt): BigInt {
-  const asset = controllerContract.getAsset(assetId)
-  const tokenStatus = asset.tokenStatus
-  const totalBorrow = tokenStatus.totalCompoundBorrowed
-    .times(tokenStatus.debtScaler)
-    .div(ONE)
-    .plus(tokenStatus.totalNormalBorrowed)
-  return totalBorrow
-}
-
-export function getSqrtTotalSupply(assetId: BigInt): BigInt {
-  const asset = controllerContract.getAsset(assetId)
-  const sqrtAssetStatus = asset.sqrtAssetStatus
-  const sqrtTotalSupply = sqrtAssetStatus.totalAmount
-  return sqrtTotalSupply
-}
-
-export function getSqrtTotalBorrow(assetId: BigInt): BigInt {
-  const asset = controllerContract.getAsset(assetId)
-  const sqrtAssetStatus = asset.sqrtAssetStatus
-  const sqrtTotalBorrow = sqrtAssetStatus.borrowedAmount
-  return sqrtTotalBorrow
-}
 
 export function updateTokenRevenue(
   event: InterestGrowthUpdated,
@@ -56,8 +24,9 @@ export function updateTokenRevenue(
 
   const lpRevenuDaily = ensureLPRevenueDaily(event.block.timestamp)
 
-  const totalSupply = getTotalSupply(assetId)
-  const totalBorrow = getTotalBorrow(assetId)
+  const latestTokenStatus = ensureLatestTokenStatus(assetId, event.block.timestamp)
+  const totalSupply = latestTokenStatus.totalSupply
+  const totalBorrow = latestTokenStatus.totalBorrow
 
   const prevEntity = ensureInterestGrowthTx(
     assetId,
@@ -109,8 +78,9 @@ export function updatePremiumRevenue(
     event.block.timestamp
   )
 
-  const sqrtTotalSupply = getSqrtTotalSupply(assetId)
-  const sqrtTotalBorrow = getSqrtTotalBorrow(assetId)
+  const latestTokenStatus = ensureLatestTokenStatus(assetId, event.block.timestamp)
+  const sqrtTotalSupply = latestTokenStatus.sqrtTotalSupply
+  const sqrtTotalBorrow = latestTokenStatus.sqrtTotalBorrow
 
   const accumulatedPremiumSupply =
     event.params.supplyPremiumGrowth.times(sqrtTotalSupply)
@@ -148,7 +118,8 @@ export function updateFeeRevenue(
     event.block.timestamp
   )
 
-  const sqrtTotalSupply = getSqrtTotalSupply(assetId)
+  const latestTokenStatus = ensureLatestTokenStatus(assetId, event.block.timestamp)
+  const sqrtTotalSupply = latestTokenStatus.sqrtTotalSupply
 
   const fee0 = event.params.fee0Growth.times(sqrtTotalSupply)
   const fee1 = event.params.fee1Growth.times(sqrtTotalSupply)
