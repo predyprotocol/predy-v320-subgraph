@@ -2,9 +2,9 @@ import { BigInt } from '@graphprotocol/graph-ts'
 
 import {
   AccumulatedProtocolFeeDaily,
+  AssetEntity,
   InterestGrowthTx,
   LPRevenueDaily,
-  LatestTokenStatus,
   OpenPositionEntity,
   TotalTokensEntity,
   TradeHistoryItem,
@@ -207,18 +207,21 @@ export function ensureAccumulatedProtocolFeeDaily(
   return entity
 }
 
-export function ensureLatestTokenStatus(assetId: BigInt, eventTime: BigInt): LatestTokenStatus {
-   const id = `latest-${assetId}`
-   let entity = LatestTokenStatus.load(id)
+export function ensureAssetEntity(
+  assetId: BigInt,
+  eventTime: BigInt
+): AssetEntity {
+  const id = assetId.toString()
+  let entity = AssetEntity.load(id)
 
-   if (entity == null) {
-     entity = new LatestTokenStatus(id)
-     entity.totalSupply = BigInt.zero()
-     entity.totalBorrow = BigInt.zero()
-     entity.sqrtTotalSupply = BigInt.zero()
-     entity.sqrtTotalBorrow = BigInt.zero()
-     entity.updatedAt = eventTime
-   }
+  if (entity == null) {
+    entity = new AssetEntity(id)
+    entity.totalSupply = BigInt.zero()
+    entity.totalBorrow = BigInt.zero()
+    entity.sqrtTotalSupply = BigInt.zero()
+    entity.sqrtTotalBorrow = BigInt.zero()
+    entity.createdAt = eventTime
+  }
 
-   return entity
+  return entity
 }

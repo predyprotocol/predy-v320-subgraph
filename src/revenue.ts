@@ -4,13 +4,11 @@ import {
 import * as schema from '../generated/schema'
 import {
   ensureAccumulatedProtocolFeeDaily,
+  ensureAssetEntity,
   ensureInterestGrowthTx,
   ensureLPRevenueDaily,
-  ensureLatestTokenStatus,
 } from './helper'
-import { ONE } from './constants'
 import { BigInt } from '@graphprotocol/graph-ts'
-import { controllerContract } from './contracts'
 import {
   LPRevenueDaily, TotalTokensEntity,
 } from '../generated/schema'
@@ -21,17 +19,18 @@ export function updateTokenRevenue(
   totalTokens: TotalTokensEntity
 ): schema.LPRevenueDaily {
   const assetId = event.params.assetId
+  const timestamp = event.block.timestamp
 
-  const lpRevenuDaily = ensureLPRevenueDaily(event.block.timestamp)
+  const lpRevenuDaily = ensureLPRevenueDaily(timestamp)
 
-  const latestTokenStatus = ensureLatestTokenStatus(assetId, event.block.timestamp)
-  const totalSupply = latestTokenStatus.totalSupply
-  const totalBorrow = latestTokenStatus.totalBorrow
+  const asset = ensureAssetEntity(assetId, timestamp)
+  const totalSupply = asset.totalSupply
+  const totalBorrow = asset.totalBorrow
 
   const prevEntity = ensureInterestGrowthTx(
     assetId,
     totalTokens.growthCount,
-    event.block.timestamp
+    timestamp
   )
 
   // Token Fee
@@ -57,7 +56,7 @@ export function updateTokenRevenue(
     )
   }
 
-  lpRevenuDaily.updatedAt = event.block.timestamp
+  lpRevenuDaily.updatedAt = timestamp
 
   lpRevenuDaily.save()
 
@@ -69,18 +68,19 @@ export function updatePremiumRevenue(
   totalTokens: TotalTokensEntity
 ): LPRevenueDaily {
   const assetId = event.params.assetId
-
-  const lpRevenuDaily = ensureLPRevenueDaily(event.block.timestamp)
+  const timestamp = event.block.timestamp
+  
+  const lpRevenuDaily = ensureLPRevenueDaily(timestamp)
 
   const prevEntity = ensureInterestGrowthTx(
     assetId,
     totalTokens.growthCount,
-    event.block.timestamp
+    timestamp
   )
 
-  const latestTokenStatus = ensureLatestTokenStatus(assetId, event.block.timestamp)
-  const sqrtTotalSupply = latestTokenStatus.sqrtTotalSupply
-  const sqrtTotalBorrow = latestTokenStatus.sqrtTotalBorrow
+  const asset = ensureAssetEntity(assetId, timestamp)
+  const sqrtTotalSupply = asset.sqrtTotalSupply
+  const sqrtTotalBorrow = asset.sqrtTotalBorrow
 
   const accumulatedPremiumSupply =
     event.params.supplyPremiumGrowth.times(sqrtTotalSupply)
@@ -98,7 +98,7 @@ export function updatePremiumRevenue(
     accumulatedPremiumBorrow.minus(prevAccumulatedPremiumBorrow)
   )
 
-  lpRevenuDaily.updatedAt = event.block.timestamp
+  lpRevenuDaily.updatedAt = timestamp
   lpRevenuDaily.save()
 
   return lpRevenuDaily
@@ -109,17 +109,18 @@ export function updateFeeRevenue(
   totalTokens: TotalTokensEntity
 ): LPRevenueDaily {
   const assetId = event.params.assetId
+  const timestamp = event.block.timestamp
 
-  const lpRevenuDaily = ensureLPRevenueDaily(event.block.timestamp)
+  const lpRevenuDaily = ensureLPRevenueDaily(timestamp)
 
   const prevEntity = ensureInterestGrowthTx(
     assetId,
     totalTokens.growthCount,
-    event.block.timestamp
+    timestamp
   )
 
-  const latestTokenStatus = ensureLatestTokenStatus(assetId, event.block.timestamp)
-  const sqrtTotalSupply = latestTokenStatus.sqrtTotalSupply
+  const asset = ensureAssetEntity(assetId, timestamp)
+  const sqrtTotalSupply = asset.sqrtTotalSupply
 
   const fee0 = event.params.fee0Growth.times(sqrtTotalSupply)
   const fee1 = event.params.fee1Growth.times(sqrtTotalSupply)
@@ -131,7 +132,7 @@ export function updateFeeRevenue(
     fee1.minus(prevEntity.accumulatedFee1)
   )
 
-  lpRevenuDaily.updatedAt = event.block.timestamp
+  lpRevenuDaily.updatedAt = timestamp
   lpRevenuDaily.save()
 
   return lpRevenuDaily
@@ -141,8 +142,9 @@ export function updateProtocolRevenue(
   event: InterestGrowthUpdated
 ): schema.AccumulatedProtocolFeeDaily {
   const assetId = event.params.assetId
+  const timestamp = event.block.timestamp
 
-  const entity = ensureAccumulatedProtocolFeeDaily(event.block.timestamp)
+  const entity = ensureAccumulatedProtocolFeeDaily(timestamp)
 
   if (assetId.equals(BigInt.fromI32(1))) {
     // USDC
