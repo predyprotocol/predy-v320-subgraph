@@ -2,6 +2,7 @@ import { BigInt } from '@graphprotocol/graph-ts'
 
 import {
   AccumulatedProtocolFeeDaily,
+  AssetEntity,
   InterestGrowthTx,
   LPRevenueDaily,
   OpenPositionEntity,
@@ -201,6 +202,25 @@ export function ensureAccumulatedProtocolFeeDaily(
     entity.withdrawnProtocolFee1 = BigInt.fromI32(0)
     entity.createdAt = eventTime
     entity.updatedAt = eventTime
+  }
+
+  return entity
+}
+
+export function ensureAssetEntity(
+  assetId: BigInt,
+  eventTime: BigInt
+): AssetEntity {
+  const id = assetId.toString()
+  let entity = AssetEntity.load(id)
+
+  if (entity == null) {
+    entity = new AssetEntity(id)
+    entity.totalSupply = BigInt.zero()
+    entity.totalBorrow = BigInt.zero()
+    entity.sqrtTotalSupply = BigInt.zero()
+    entity.sqrtTotalBorrow = BigInt.zero()
+    entity.createdAt = eventTime
   }
 
   return entity

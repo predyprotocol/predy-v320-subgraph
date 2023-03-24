@@ -17,7 +17,7 @@ import {
   VaultLiquidated
 } from '../generated/Controller/Controller'
 import {
-  AssetEntity, RebalanceHistoryItem,
+  RebalanceHistoryItem,
   TradeHistoryItem,
   VaultEntity
 } from '../generated/schema'
@@ -25,16 +25,19 @@ import {
   createFeeHistory,
   createLiquidationHistory,
   createMarginHistory,
+  ensureAssetEntity,
   ensureInterestGrowthTx,
   ensureOpenPosition,
   ensureTotalTokensEntity
 } from './helper'
-import { getSqrtTotalBorrow, getSqrtTotalSupply, getTotalBorrow, getTotalSupply, updateFeeRevenue, updatePremiumRevenue, updateProtocolRevenue, updateTokenRevenue } from './revenue'
+import { updateFeeRevenue, updatePremiumRevenue, updateProtocolRevenue, updateTokenRevenue } from './revenue'
+import { controllerContract } from './contracts'
+import { ONE } from './constants'
 
 export function handleOperatorUpdated(event: OperatorUpdated): void { }
 
 export function handlePairAdded(event: PairAdded): void {
-  const asset = new AssetEntity(event.params.assetId.toString())
+  const asset = ensureAssetEntity(event.params.assetId, event.block.timestamp)
 
   asset.assetId = event.params.assetId
   asset.uniswapPool = event.params._uniswapPool
@@ -61,11 +64,7 @@ export function handleVaultCreated(event: VaultCreated): void {
 }
 
 export function handleTokenSupplied(event: TokenSupplied): void {
-  const asset = AssetEntity.load(event.params.assetId.toString())
-
-  if (!asset) {
-    return
-  }
+  const asset = ensureAssetEntity(event.params.assetId, event.block.timestamp)
 
   asset.totalSupply = asset.totalSupply.plus(event.params.suppliedAmount)
 
@@ -73,11 +72,7 @@ export function handleTokenSupplied(event: TokenSupplied): void {
 }
 
 export function handleTokenWithdrawn(event: TokenWithdrawn): void {
-  const asset = AssetEntity.load(event.params.assetId.toString())
-
-  if (!asset) {
-    return
-  }
+  const asset = ensureAssetEntity(event.params.assetId, event.block.timestamp)
 
   asset.totalSupply = asset.totalSupply.minus(event.params.finalWithdrawnAmount)
 
@@ -375,17 +370,25 @@ export function handleRebalanced(event: Rebalanced): void {
 
 export function handleInterestGrowthUpdated(event: InterestGrowthUpdated): void {
   const assetId = event.params.assetId
+  const timestamp = event.block.timestamp
 
-  const totalTokens = ensureTotalTokensEntity(
-    event.params.assetId,
-    event.block.timestamp
-  )
+  const totalTokens = ensureTotalTokensEntity(assetId, timestamp)
 
-  if (totalTokens.growthCount.gt(BigInt.zero())) {
+  const asset = ensureAssetEntity(assetId, timestamp)
+  
+  if (
+    totalTokens.growthCount.gt(BigInt.zero()) &&
+    asset.totalSupply.gt(BigInt.zero()) &&
+    asset.totalBorrow.gt(BigInt.zero())
+  ) {
     updateTokenRevenue(event, totalTokens)
   }
 
-  if (assetId.notEqual(BigInt.fromI32(1))) {
+  if (
+    assetId.notEqual(BigInt.fromI32(1)) &&
+    asset.sqrtTotalSupply.gt(BigInt.zero()) &&
+    asset.sqrtTotalBorrow.gt(BigInt.zero())
+  ) {
     updatePremiumRevenue(event, totalTokens)
     updateFeeRevenue(event, totalTokens)
   }
@@ -394,32 +397,53 @@ export function handleInterestGrowthUpdated(event: InterestGrowthUpdated): void 
   totalTokens.growthCount = totalTokens.growthCount.plus(BigInt.fromU32(1))
   totalTokens.save()
   const entity = ensureInterestGrowthTx(
-    event.params.assetId,
+    assetId,
     totalTokens.growthCount,
-    event.block.timestamp
+    timestamp
   )
-  if (assetId.equals(BigInt.fromI32(1))) {
-    entity.accumulatedInterests = event.params.assetGrowth.times(
-      getTotalSupply(assetId)
-    )
-    entity.accumulatedDebts = event.params.debtGrowth.times(
-      getTotalBorrow(assetId)
-    )
-  } else {
+
+  entity.accumulatedInterests = event.params.assetGrowth.times(
+    asset.totalSupply
+  )
+  entity.accumulatedDebts = event.params.debtGrowth.times(asset.totalBorrow)
+
+  if (assetId.notEqual(BigInt.fromI32(1))) {
     entity.accumulatedPremiumSupply = event.params.supplyPremiumGrowth.times(
-      getSqrtTotalSupply(assetId)
+      asset.sqrtTotalSupply
     )
     entity.accumulatedPremiumBorrow = event.params.borrowPremiumGrowth.times(
-      getSqrtTotalBorrow(assetId)
+      asset.sqrtTotalBorrow
     )
     entity.accumulatedFee0 = event.params.fee0Growth.times(
-      getSqrtTotalSupply(assetId)
+      asset.sqrtTotalSupply
     )
     entity.accumulatedFee1 = event.params.fee1Growth.times(
-      getSqrtTotalSupply(assetId)
+      asset.sqrtTotalSupply
     )
   }
   entity.save()
 
   updateProtocolRevenue(event)
+
+  // Update AssetEntity, it will be used when this handler be called next time.
+  const currentAsset = controllerContract.getAsset(assetId)
+  const tokenStatus = currentAsset.tokenStatus
+
+  asset.totalSupply = tokenStatus.totalCompoundDeposited
+    .times(tokenStatus.assetScaler)
+    .div(ONE)
+    .plus(tokenStatus.totalNormalDeposited)
+  asset.totalBorrow = tokenStatus.totalCompoundBorrowed
+    .times(tokenStatus.debtScaler)
+    .div(ONE)
+    .plus(tokenStatus.totalNormalBorrowed)
+
+  if (assetId.notEqual(BigInt.fromI32(1))) { 
+    const sqrtAssetStatus = currentAsset.sqrtAssetStatus
+    asset.sqrtTotalSupply = sqrtAssetStatus.totalAmount
+    asset.sqrtTotalBorrow = sqrtAssetStatus.borrowedAmount
+  }
+
+  asset.updatedAt = timestamp
+  asset.save()
 }
