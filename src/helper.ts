@@ -216,6 +216,7 @@ export function ensureAssetEntity(
 
   if (entity == null) {
     entity = new AssetEntity(id)
+    entity.assetId = assetId
     entity.totalSupply = BigInt.zero()
     entity.totalBorrow = BigInt.zero()
     entity.sqrtTotalSupply = BigInt.zero()
