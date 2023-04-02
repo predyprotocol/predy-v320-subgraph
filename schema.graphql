@@ -1,5 +1,6 @@
 type AssetEntity @entity {
-  id: ID!
+  id: ID! # controllerAddress/assetId
+  contractAddress: Bytes # address
   assetId: BigInt!
   uniswapPool: Bytes # address
   totalSupply: BigInt! # uint256
@@ -12,7 +13,8 @@ type AssetEntity @entity {
 }
 
 type VaultEntity @entity {
-  id: ID! # vaultId.toString()
+  id: ID! # controllerAddress/vaultId
+  contractAddress: Bytes # address
   vaultId: BigInt! # uint256
   owner: Bytes! # address
   margin: BigInt! # int256
@@ -23,7 +25,7 @@ type VaultEntity @entity {
 }
 
 type OpenPositionEntity @entity {
-  id: ID!
+  id: ID! # vaultId/assetId
   vault: VaultEntity!
   assetId: BigInt!
   tradeAmount: BigInt! # int256
@@ -81,7 +83,7 @@ type StrategyUserHistoryItem @entity {
 }
 
 type UniFeeGrowthHourly @entity {
-  id: ID! # yyyy-MM-dd
+  id: ID! # address/yyyy-MM-dd
   address: Bytes!
   feeGrowthGlobal0X128: BigInt!
   feeGrowthGlobal1X128: BigInt!
@@ -95,7 +97,7 @@ enum Interval {
 }
 
 type AggregatedUniswapPriceEntity @entity {
-  id: ID!
+  id: ID! # address/interval/open
   address: Bytes!
   interval: Interval!
   openTimestamp: BigInt!
@@ -114,7 +116,7 @@ type RebalanceHistoryItem @entity {
 }
 
 type LPRevenueDaily @entity {
-  id: ID! # yyyy-MM-dd
+  id: ID! # address/yyyy-MM-dd
   fee0: BigInt!
   fee1: BigInt!
   premiumSupply: BigInt!
@@ -128,7 +130,7 @@ type LPRevenueDaily @entity {
 }
 
 type AccumulatedProtocolFeeDaily @entity {
-  id: ID! # yyyy-MM-dd
+  id: ID! # address/yyyy-MM-dd
   accumulatedProtocolFee0: BigInt!
   accumulatedProtocolFee1: BigInt!
   withdrawnProtocolFee0: BigInt!
@@ -145,7 +147,7 @@ type TotalTokensEntity @entity {
 }
 
 type InterestGrowthTx @entity {
-  id: ID! # assetId - TotalTokensEntity.growthCount
+  id: ID! # address/assetId - TotalTokensEntity.growthCount
   accumulatedInterests: BigInt!
   accumulatedDebts: BigInt!
   accumulatedPremiumSupply: BigInt!

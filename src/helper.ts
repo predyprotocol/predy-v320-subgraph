@@ -1,4 +1,4 @@
-import { BigInt } from '@graphprotocol/graph-ts'
+import { BigInt, Bytes } from '@graphprotocol/graph-ts'
 
 import {
   AccumulatedProtocolFeeDaily,
@@ -12,18 +12,25 @@ import {
 } from '../generated/schema'
 
 export function ensureOpenPosition(
-  id: string,
+  controllerAddress: Bytes,
   assetId: BigInt,
   vaultId: BigInt,
   eventTime: BigInt
 ): OpenPositionEntity {
+  const id =
+    controllerAddress.toHex() +
+    '/' +
+    vaultId.toString() +
+    '/' +
+    assetId.toString()
+
   let openPosition = OpenPositionEntity.load(id)
 
   if (openPosition == null) {
     openPosition = new OpenPositionEntity(id)
     openPosition.assetId = assetId
     openPosition.createdAt = eventTime
-    openPosition.vault = vaultId.toString()
+    openPosition.vault = toVaultId(controllerAddress, vaultId)
     openPosition.tradeAmount = BigInt.zero()
     openPosition.sqrtTradeAmount = BigInt.zero()
     openPosition.entryValue = BigInt.zero()
@@ -41,6 +48,7 @@ export function ensureOpenPosition(
 }
 
 export function createMarginHistory(
+  controllerAddress: Bytes,
   txHash: string,
   vaultId: BigInt,
   marginAmount: BigInt,
@@ -50,7 +58,7 @@ export function createMarginHistory(
     txHash + '/' + vaultId.toString() + '/margin'
   )
 
-  historyItem.vault = vaultId.toString()
+  historyItem.vault = toVaultId(controllerAddress, vaultId)
   historyItem.action = 'MARGIN'
   historyItem.payoff = marginAmount
   historyItem.txHash = txHash
@@ -60,6 +68,7 @@ export function createMarginHistory(
 }
 
 export function createFeeHistory(
+  controllerAddress: Bytes,
   txHash: string,
   logIndex: BigInt,
   vaultId: BigInt,
@@ -70,7 +79,7 @@ export function createFeeHistory(
     txHash + '/' + logIndex.toString() + '/' + vaultId.toString() + '/fee'
   )
 
-  historyItem.vault = vaultId.toString()
+  historyItem.vault = toVaultId(controllerAddress, vaultId)
   historyItem.action = 'FEE'
   historyItem.payoff = fee
   historyItem.txHash = txHash
@@ -80,6 +89,7 @@ export function createFeeHistory(
 }
 
 export function createLiquidationHistory(
+  controllerAddress: Bytes,
   txHash: string,
   vaultId: BigInt,
   penalty: BigInt,
@@ -89,7 +99,7 @@ export function createLiquidationHistory(
     txHash + '/' + vaultId.toString() + '/liq'
   )
 
-  historyItem.vault = vaultId.toString()
+  historyItem.vault = toVaultId(controllerAddress, vaultId)
   historyItem.action = 'LIQUIDATION'
   historyItem.payoff = penalty
   historyItem.txHash = txHash
@@ -99,9 +109,10 @@ export function createLiquidationHistory(
 }
 
 export function ensureUniFeeGrowthHourly(
+  address: Bytes,
   eventTime: BigInt
 ): UniFeeGrowthHourly {
-  const id = toHourlyId(eventTime)
+  const id = address.toHex() + '/' + toHourlyId(eventTime)
   let entity = UniFeeGrowthHourly.load(id)
 
   if (entity == null) {
@@ -127,8 +138,11 @@ function toISODateString(timestamp: BigInt): string {
   return date.substring(0, date.indexOf('T'))
 }
 
-export function ensureLPRevenueDaily(eventTime: BigInt): LPRevenueDaily {
-  const id = toISODateString(eventTime)
+export function ensureLPRevenueDaily(
+  address: Bytes,
+  eventTime: BigInt
+): LPRevenueDaily {
+  const id = address.toHex() + '/' + toISODateString(eventTime)
   let entity = LPRevenueDaily.load(id)
 
   if (entity == null) {
@@ -149,10 +163,11 @@ export function ensureLPRevenueDaily(eventTime: BigInt): LPRevenueDaily {
 }
 
 export function ensureTotalTokensEntity(
+  address: Bytes,
   assetId: BigInt,
   eventTime: BigInt
 ): TotalTokensEntity {
-  const id = `total-${assetId.toString()}`
+  const id = `total-${address.toHex()}-${assetId.toString()}`
   let entity = TotalTokensEntity.load(id)
 
   if (entity == null) {
@@ -166,11 +181,12 @@ export function ensureTotalTokensEntity(
 }
 
 export function ensureInterestGrowthTx(
+  address: Bytes,
   assetId: BigInt,
   count: BigInt,
   eventTime: BigInt
 ): InterestGrowthTx {
-  const id = `${assetId.toString()}-${count.toString()}`
+  const id = `${address.toHex()}-${assetId.toString()}-${count.toString()}`
   let entity = InterestGrowthTx.load(id)
 
   if (entity == null) {
@@ -187,11 +203,11 @@ export function ensureInterestGrowthTx(
   return entity
 }
 
-
 export function ensureAccumulatedProtocolFeeDaily(
+  address: Bytes,
   eventTime: BigInt
 ): AccumulatedProtocolFeeDaily {
-  const id = toISODateString(eventTime)
+  const id = address.toHex() + '/' + toISODateString(eventTime)
   let entity = AccumulatedProtocolFeeDaily.load(id)
 
   if (entity == null) {
@@ -208,14 +224,16 @@ export function ensureAccumulatedProtocolFeeDaily(
 }
 
 export function ensureAssetEntity(
+  controllerAddress: Bytes,
   assetId: BigInt,
   eventTime: BigInt
 ): AssetEntity {
-  const id = assetId.toString()
+  const id = toAssetId(controllerAddress, assetId)
   let entity = AssetEntity.load(id)
 
   if (entity == null) {
     entity = new AssetEntity(id)
+    entity.contractAddress = controllerAddress
     entity.assetId = assetId
     entity.totalSupply = BigInt.zero()
     entity.totalBorrow = BigInt.zero()
@@ -225,4 +243,12 @@ export function ensureAssetEntity(
   }
 
   return entity
+}
+
+export function toAssetId(address: Bytes, assetId: BigInt): string {
+  return address.toHex() + '/' + assetId.toString()
+}
+
+export function toVaultId(address: Bytes, vaultId: BigInt): string {
+  return address.toHex() + '/' + vaultId.toString()
 }

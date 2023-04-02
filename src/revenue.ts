@@ -1,18 +1,13 @@
-import {
-  InterestGrowthUpdated  
-} from '../generated/Controller/Controller'
+import { InterestGrowthUpdated } from '../generated/Controller/Controller'
 import * as schema from '../generated/schema'
 import {
   ensureAccumulatedProtocolFeeDaily,
   ensureAssetEntity,
   ensureInterestGrowthTx,
-  ensureLPRevenueDaily,
+  ensureLPRevenueDaily
 } from './helper'
 import { BigInt } from '@graphprotocol/graph-ts'
-import {
-  LPRevenueDaily, TotalTokensEntity,
-} from '../generated/schema'
-
+import { LPRevenueDaily, TotalTokensEntity } from '../generated/schema'
 
 export function updateTokenRevenue(
   event: InterestGrowthUpdated,
@@ -21,13 +16,14 @@ export function updateTokenRevenue(
   const assetId = event.params.assetId
   const timestamp = event.block.timestamp
 
-  const lpRevenuDaily = ensureLPRevenueDaily(timestamp)
+  const lpRevenuDaily = ensureLPRevenueDaily(event.address, timestamp)
 
-  const asset = ensureAssetEntity(assetId, timestamp)
+  const asset = ensureAssetEntity(event.address, assetId, timestamp)
   const totalSupply = asset.totalSupply
   const totalBorrow = asset.totalBorrow
 
   const prevEntity = ensureInterestGrowthTx(
+    event.address,
     assetId,
     totalTokens.growthCount,
     timestamp
@@ -69,16 +65,17 @@ export function updatePremiumRevenue(
 ): LPRevenueDaily {
   const assetId = event.params.assetId
   const timestamp = event.block.timestamp
-  
-  const lpRevenuDaily = ensureLPRevenueDaily(timestamp)
+
+  const lpRevenuDaily = ensureLPRevenueDaily(event.address, timestamp)
 
   const prevEntity = ensureInterestGrowthTx(
+    event.address,
     assetId,
     totalTokens.growthCount,
     timestamp
   )
 
-  const asset = ensureAssetEntity(assetId, timestamp)
+  const asset = ensureAssetEntity(event.address, assetId, timestamp)
   const sqrtTotalSupply = asset.sqrtTotalSupply
   const sqrtTotalBorrow = asset.sqrtTotalBorrow
 
@@ -111,15 +108,16 @@ export function updateFeeRevenue(
   const assetId = event.params.assetId
   const timestamp = event.block.timestamp
 
-  const lpRevenuDaily = ensureLPRevenueDaily(timestamp)
+  const lpRevenuDaily = ensureLPRevenueDaily(event.address, timestamp)
 
   const prevEntity = ensureInterestGrowthTx(
+    event.address,
     assetId,
     totalTokens.growthCount,
     timestamp
   )
 
-  const asset = ensureAssetEntity(assetId, timestamp)
+  const asset = ensureAssetEntity(event.address, assetId, timestamp)
   const sqrtTotalSupply = asset.sqrtTotalSupply
 
   const fee0 = event.params.fee0Growth.times(sqrtTotalSupply)
@@ -144,7 +142,7 @@ export function updateProtocolRevenue(
   const assetId = event.params.assetId
   const timestamp = event.block.timestamp
 
-  const entity = ensureAccumulatedProtocolFeeDaily(timestamp)
+  const entity = ensureAccumulatedProtocolFeeDaily(event.address, timestamp)
 
   if (assetId.equals(BigInt.fromI32(1))) {
     // USDC
