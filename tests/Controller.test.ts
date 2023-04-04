@@ -14,8 +14,8 @@ describe("handlePositionUpdated", () => {
     handlePositionUpdated(positionUpdatedEvent)
 
     assert.entityCount('OpenPositionEntity', 1)
-    assert.fieldEquals('OpenPositionEntity', '1/2', 'assetId', '2')
-    assert.fieldEquals('OpenPositionEntity', '1/2', 'tradeAmount', '1')
+    assert.fieldEquals('OpenPositionEntity', '0x0000000000000000000000000000000000000000-1-2', 'assetId', '2')
+    assert.fieldEquals('OpenPositionEntity', '0x0000000000000000000000000000000000000000-1-2', 'tradeAmount', '1')
   })
 
   test('decrease position amount', () => {
@@ -26,8 +26,11 @@ describe("handlePositionUpdated", () => {
     handlePositionUpdated(positionUpdatedEvent2)
 
     assert.entityCount('OpenPositionEntity', 1)
-    assert.fieldEquals('OpenPositionEntity', '1/2', 'assetId', '2')
-    assert.fieldEquals('OpenPositionEntity', '1/2', 'tradeAmount', '0')
+    assert.fieldEquals('OpenPositionEntity', '0x0000000000000000000000000000000000000000-1-2', 'assetId', '2')
+    assert.fieldEquals('OpenPositionEntity', '0x0000000000000000000000000000000000000000-1-2', 'tradeAmount', '0')
+
+    assert.entityCount('TradeHistoryItem', 1)
+
   })
 })
 
@@ -38,6 +41,6 @@ describe("handleFeeCollected", () => {
     handleFeeCollected(feeCollectedEvent)
 
     assert.entityCount('OpenPositionEntity', 1)
-    assert.fieldEquals('OpenPositionEntity', '1/2', 'feeAmount', '10')
+    assert.fieldEquals('OpenPositionEntity', '0x0000000000000000000000000000000000000000-1-2', 'feeAmount', '10')
   })
 })

@@ -1,9 +1,10 @@
-import { ethereum, BigInt } from "@graphprotocol/graph-ts"
+import { ethereum, BigInt, Address } from "@graphprotocol/graph-ts"
 import { newMockEvent } from "matchstick-as/assembly/index"
 import { FeeCollected, PositionUpdated } from "../generated/Controller/Controller"
 
 export function createPositionUpdated(vaultId: BigInt, assetId: BigInt, tradeAmount: BigInt, tradeSqrtAmount: BigInt, fee: BigInt): PositionUpdated {
   let positionUpdatedEvent = changetype<PositionUpdated>(newMockEvent())
+  positionUpdatedEvent.address = Address.zero()
   positionUpdatedEvent.parameters = new Array()
 
   let vaultIdParam = new ethereum.EventParam("vaultId", ethereum.Value.fromUnsignedBigInt(vaultId))
@@ -34,6 +35,9 @@ export function createPositionUpdated(vaultId: BigInt, assetId: BigInt, tradeAmo
 
 export function createFeeCollectedEvent(vaultId: BigInt, assetId: BigInt, feeCollected: BigInt): FeeCollected {
   let feeCollectedEvent = changetype<FeeCollected>(newMockEvent())
+
+  feeCollectedEvent.address = Address.zero()
+
   feeCollectedEvent.parameters = new Array()
 
   let vaultIdParam = new ethereum.EventParam("vaultId", ethereum.Value.fromUnsignedBigInt(vaultId))

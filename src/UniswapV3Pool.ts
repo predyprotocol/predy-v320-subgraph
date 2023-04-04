@@ -1,12 +1,15 @@
 import { BigInt } from '@graphprotocol/graph-ts'
-import { Swap, UniswapV3Pool } from '../generated/WethUniswapV3Pool/UniswapV3Pool'
+import {
+  Swap,
+  UniswapV3Pool
+} from '../generated/WethUniswapV3Pool/UniswapV3Pool'
 import { updateAggregatedPrice } from './AggregatedPrice'
 import { StrategyStartBlock, wethGammaShortStrategyContract } from './contracts'
 import { ensureUniFeeGrowthHourly } from './helper'
 import { day, dayAdjustment, hour, hourAdjustment } from './time'
 
 export function handleSwap(event: Swap): void {
-  const entity = ensureUniFeeGrowthHourly(event.block.timestamp)
+  const entity = ensureUniFeeGrowthHourly(event.address, event.block.timestamp)
 
   entity.address = event.address
 

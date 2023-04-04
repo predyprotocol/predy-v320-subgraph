@@ -6,7 +6,7 @@ export function aggregatedPriceId(
   interval: string,
   open: BigInt
 ): string {
-  return address.toHex() + '/' + interval + '/' + open.toString()
+  return address.toHex() + '-' + interval + '-' + open.toString()
 }
 
 export function createAggregatedPrice(

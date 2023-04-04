@@ -28,16 +28,27 @@ import {
   ensureAssetEntity,
   ensureInterestGrowthTx,
   ensureOpenPosition,
-  ensureTotalTokensEntity
+  ensureTotalTokensEntity,
+  toAssetId,
+  toVaultId
 } from './helper'
-import { updateFeeRevenue, updatePremiumRevenue, updateProtocolRevenue, updateTokenRevenue } from './revenue'
+import {
+  updateFeeRevenue,
+  updatePremiumRevenue,
+  updateProtocolRevenue,
+  updateTokenRevenue
+} from './revenue'
 import { controllerContract } from './contracts'
 import { ONE } from './constants'
 
 export function handleOperatorUpdated(event: OperatorUpdated): void { }
 
 export function handlePairAdded(event: PairAdded): void {
-  const asset = ensureAssetEntity(event.params.assetId, event.block.timestamp)
+  const asset = ensureAssetEntity(
+    event.address,
+    event.params.assetId,
+    event.block.timestamp
+  )
 
   asset.assetId = event.params.assetId
   asset.uniswapPool = event.params._uniswapPool
@@ -52,8 +63,9 @@ export function handlePairAdded(event: PairAdded): void {
 }
 
 export function handleVaultCreated(event: VaultCreated): void {
-  const vault = new VaultEntity(event.params.vaultId.toString())
+  const vault = new VaultEntity(toVaultId(event.address, event.params.vaultId))
 
+  vault.contractAddress = event.address
   vault.vaultId = event.params.vaultId
   vault.owner = event.params.owner
   vault.margin = BigInt.zero()
@@ -64,7 +76,11 @@ export function handleVaultCreated(event: VaultCreated): void {
 }
 
 export function handleTokenSupplied(event: TokenSupplied): void {
-  const asset = ensureAssetEntity(event.params.assetId, event.block.timestamp)
+  const asset = ensureAssetEntity(
+    event.address,
+    event.params.assetId,
+    event.block.timestamp
+  )
 
   asset.totalSupply = asset.totalSupply.plus(event.params.suppliedAmount)
 
@@ -72,7 +88,11 @@ export function handleTokenSupplied(event: TokenSupplied): void {
 }
 
 export function handleTokenWithdrawn(event: TokenWithdrawn): void {
-  const asset = ensureAssetEntity(event.params.assetId, event.block.timestamp)
+  const asset = ensureAssetEntity(
+    event.address,
+    event.params.assetId,
+    event.block.timestamp
+  )
 
   asset.totalSupply = asset.totalSupply.minus(event.params.finalWithdrawnAmount)
 
@@ -80,7 +100,7 @@ export function handleTokenWithdrawn(event: TokenWithdrawn): void {
 }
 
 export function handleMarginUpdated(event: MarginUpdated): void {
-  const vault = VaultEntity.load(event.params.vaultId.toString())
+  const vault = VaultEntity.load(toVaultId(event.address, event.params.vaultId))
 
   if (!vault) {
     return
@@ -91,6 +111,7 @@ export function handleMarginUpdated(event: MarginUpdated): void {
   vault.save()
 
   createMarginHistory(
+    event.address,
     event.transaction.hash.toHex(),
     event.params.vaultId,
     event.params.marginAmount,
@@ -99,9 +120,9 @@ export function handleMarginUpdated(event: MarginUpdated): void {
 }
 
 export function handleIsolatedVaultOpened(event: IsolatedVaultOpened): void {
-  const vault = VaultEntity.load(event.params.vaultId.toString())
+  const vault = VaultEntity.load(toVaultId(event.address, event.params.vaultId))
   const isolatedVault = VaultEntity.load(
-    event.params.isolatedVaultId.toString()
+    toVaultId(event.address, event.params.isolatedVaultId)
   )
 
   if (!vault || !isolatedVault) {
@@ -115,12 +136,14 @@ export function handleIsolatedVaultOpened(event: IsolatedVaultOpened): void {
   isolatedVault.save()
 
   createMarginHistory(
+    event.address,
     event.transaction.hash.toHex(),
     event.params.vaultId,
     event.params.marginAmount.neg(),
     event.block.timestamp
   )
   createMarginHistory(
+    event.address,
     event.transaction.hash.toHex(),
     isolatedVault.vaultId,
     event.params.marginAmount,
@@ -130,6 +153,7 @@ export function handleIsolatedVaultOpened(event: IsolatedVaultOpened): void {
 
 export function handleIsolatedVaultClosed(event: IsolatedVaultClosed): void {
   closeVault(
+    event.address,
     event.transaction.hash,
     event.params.vaultId,
     event.params.isolatedVaultId,
@@ -140,6 +164,7 @@ export function handleIsolatedVaultClosed(event: IsolatedVaultClosed): void {
 
 export function handleVaultLiquidated(event: VaultLiquidated): void {
   closeVault(
+    event.address,
     event.transaction.hash,
     event.params.mainVaultId,
     event.params.vaultId,
@@ -147,6 +172,7 @@ export function handleVaultLiquidated(event: VaultLiquidated): void {
     event.block.timestamp
   )
   createLiquidationHistory(
+    event.address,
     event.transaction.hash.toHex(),
     event.params.vaultId,
     event.params.totalPenaltyAmount,
@@ -155,14 +181,17 @@ export function handleVaultLiquidated(event: VaultLiquidated): void {
 }
 
 function closeVault(
+  controllerAddress: Bytes,
   txHash: Bytes,
   vaultId: BigInt,
   isolatedVaultId: BigInt,
   marginAmount: BigInt,
   timestamp: BigInt
 ): void {
-  const vault = VaultEntity.load(vaultId.toString())
-  const isolatedVault = VaultEntity.load(isolatedVaultId.toString())
+  const vault = VaultEntity.load(toVaultId(controllerAddress, vaultId))
+  const isolatedVault = VaultEntity.load(
+    toVaultId(controllerAddress, isolatedVaultId)
+  )
 
   if (!vault || !isolatedVault) {
     return
@@ -177,8 +206,15 @@ function closeVault(
   vault.save()
   isolatedVault.save()
 
-  createMarginHistory(txHash.toHex(), vaultId, marginAmount, timestamp)
   createMarginHistory(
+    controllerAddress,
+    txHash.toHex(),
+    vaultId,
+    marginAmount,
+    timestamp
+  )
+  createMarginHistory(
+    controllerAddress,
     txHash.toHex(),
     isolatedVaultId,
     marginAmount.neg(),
@@ -188,6 +224,7 @@ function closeVault(
 
 export function handlePositionUpdated(event: PositionUpdated): void {
   updatePosition(
+    event.address,
     event.transaction.hash,
     event.logIndex,
     event.params.vaultId,
@@ -208,6 +245,7 @@ export function handlePositionLiquidated(event: PositionLiquidated): void {
   }
 
   updatePosition(
+    event.address,
     event.transaction.hash,
     event.logIndex,
     event.params.vaultId,
@@ -221,6 +259,7 @@ export function handlePositionLiquidated(event: PositionLiquidated): void {
 }
 
 function updatePosition(
+  controllerAddress: Bytes,
   txHash: Bytes,
   logIndex: BigInt,
   vaultId: BigInt,
@@ -231,9 +270,12 @@ function updatePosition(
   fee: BigInt,
   timestamp: BigInt
 ): void {
-  const id = vaultId.toString() + '/' + assetId.toString()
-
-  const openPosition = ensureOpenPosition(id, assetId, vaultId, timestamp)
+  const openPosition = ensureOpenPosition(
+    controllerAddress,
+    assetId,
+    vaultId,
+    timestamp
+  )
 
   openPosition.tradeAmount = openPosition.tradeAmount.plus(tradeAmount)
   openPosition.sqrtTradeAmount =
@@ -262,7 +304,7 @@ function updatePosition(
 
   openPosition.save()
 
-  const vault = VaultEntity.load(vaultId.toString())
+  const vault = VaultEntity.load(toVaultId(controllerAddress, vaultId))
   if (vault) {
     vault.margin = vault.margin
       .plus(payoff.perpPayoff)
@@ -271,20 +313,27 @@ function updatePosition(
   }
 
   if (!fee.equals(BigInt.zero())) {
-    createFeeHistory(txHash.toHex(), logIndex, vaultId, fee, timestamp)
+    createFeeHistory(
+      controllerAddress,
+      txHash.toHex(),
+      logIndex,
+      vaultId,
+      fee,
+      timestamp
+    )
   }
 
   if (!tradeAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-      '/' +
+      '-' +
       logIndex.toString() +
-      '/' +
+      '-' +
       vaultId.toString() +
-      '/perp'
+      '-perp'
     )
 
-    historyItem.vault = vaultId.toString()
+    historyItem.vault = toVaultId(controllerAddress, vaultId)
     historyItem.assetId = assetId
     historyItem.action = 'POSITION'
     historyItem.product = 'PERP'
@@ -300,11 +349,11 @@ function updatePosition(
   if (!tradeSqrtAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-      '/' +
+      '-' +
       logIndex.toString() +
-      '/' +
+      '-' +
       vaultId.toString() +
-      '/sqrt'
+      '-sqrt'
     )
 
     historyItem.vault = vaultId.toString()
@@ -322,11 +371,8 @@ function updatePosition(
 }
 
 export function handleFeeCollected(event: FeeCollected): void {
-  const id =
-    event.params.vaultId.toString() + '/' + event.params.assetId.toString()
-
   const openPosition = ensureOpenPosition(
-    id,
+    event.address,
     event.params.assetId,
     event.params.vaultId,
     event.block.timestamp
@@ -340,6 +386,7 @@ export function handleFeeCollected(event: FeeCollected): void {
 
   if (!event.params.feeCollected.equals(BigInt.zero())) {
     createFeeHistory(
+      event.address,
       event.transaction.hash.toHex(),
       event.logIndex,
       event.params.vaultId,
@@ -352,14 +399,14 @@ export function handleFeeCollected(event: FeeCollected): void {
 export function handleRebalanced(event: Rebalanced): void {
   const id =
     event.transaction.hash.toHex() +
-    '/' +
+    '-' +
     event.transactionLogIndex.toString() +
-    '/' +
+    '-' +
     event.params.assetId.toString()
 
   const item = new RebalanceHistoryItem(id)
 
-  item.asset = event.params.assetId.toString()
+  item.asset = toAssetId(event.address, event.params.assetId)
   item.tickLower = BigInt.fromI32(event.params.tickLower)
   item.tickUpper = BigInt.fromI32(event.params.tickUpper)
   item.profit = event.params.profit
@@ -368,14 +415,16 @@ export function handleRebalanced(event: Rebalanced): void {
   item.save()
 }
 
-export function handleInterestGrowthUpdated(event: InterestGrowthUpdated): void {
+export function handleInterestGrowthUpdated(
+  event: InterestGrowthUpdated
+): void {
   const assetId = event.params.assetId
   const timestamp = event.block.timestamp
 
-  const totalTokens = ensureTotalTokensEntity(assetId, timestamp)
+  const totalTokens = ensureTotalTokensEntity(event.address, assetId, timestamp)
 
-  const asset = ensureAssetEntity(assetId, timestamp)
-  
+  const asset = ensureAssetEntity(event.address, assetId, timestamp)
+
   if (
     totalTokens.growthCount.gt(BigInt.zero()) &&
     asset.totalSupply.gt(BigInt.zero()) &&
@@ -397,6 +446,7 @@ export function handleInterestGrowthUpdated(event: InterestGrowthUpdated): void 
   totalTokens.growthCount = totalTokens.growthCount.plus(BigInt.fromU32(1))
   totalTokens.save()
   const entity = ensureInterestGrowthTx(
+    event.address,
     assetId,
     totalTokens.growthCount,
     timestamp
@@ -438,7 +488,7 @@ export function handleInterestGrowthUpdated(event: InterestGrowthUpdated): void 
     .div(ONE)
     .plus(tokenStatus.totalNormalBorrowed)
 
-  if (assetId.notEqual(BigInt.fromI32(1))) { 
+  if (assetId.notEqual(BigInt.fromI32(1))) {
     const sqrtAssetStatus = currentAsset.sqrtAssetStatus
     asset.sqrtTotalSupply = sqrtAssetStatus.totalAmount
     asset.sqrtTotalBorrow = sqrtAssetStatus.borrowedAmount
