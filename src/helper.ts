@@ -19,9 +19,9 @@ export function ensureOpenPosition(
 ): OpenPositionEntity {
   const id =
     controllerAddress.toHex() +
-    '/' +
+    '-' +
     vaultId.toString() +
-    '/' +
+    '-' +
     assetId.toString()
 
   let openPosition = OpenPositionEntity.load(id)
@@ -55,7 +55,7 @@ export function createMarginHistory(
   eventTime: BigInt
 ): void {
   const historyItem = new TradeHistoryItem(
-    txHash + '/' + vaultId.toString() + '/margin'
+    txHash + '-' + vaultId.toString() + '-margin'
   )
 
   historyItem.vault = toVaultId(controllerAddress, vaultId)
@@ -76,7 +76,7 @@ export function createFeeHistory(
   eventTime: BigInt
 ): void {
   const historyItem = new TradeHistoryItem(
-    txHash + '/' + logIndex.toString() + '/' + vaultId.toString() + '/fee'
+    txHash + '-' + logIndex.toString() + '-' + vaultId.toString() + '-fee'
   )
 
   historyItem.vault = toVaultId(controllerAddress, vaultId)
@@ -96,7 +96,7 @@ export function createLiquidationHistory(
   eventTime: BigInt
 ): void {
   const historyItem = new TradeHistoryItem(
-    txHash + '/' + vaultId.toString() + '/liq'
+    txHash + '-' + vaultId.toString() + '-liq'
   )
 
   historyItem.vault = toVaultId(controllerAddress, vaultId)
@@ -112,7 +112,7 @@ export function ensureUniFeeGrowthHourly(
   address: Bytes,
   eventTime: BigInt
 ): UniFeeGrowthHourly {
-  const id = address.toHex() + '/' + toHourlyId(eventTime)
+  const id = address.toHex() + '-' + toHourlyId(eventTime)
   let entity = UniFeeGrowthHourly.load(id)
 
   if (entity == null) {
@@ -142,7 +142,7 @@ export function ensureLPRevenueDaily(
   address: Bytes,
   eventTime: BigInt
 ): LPRevenueDaily {
-  const id = address.toHex() + '/' + toISODateString(eventTime)
+  const id = address.toHex() + '-' + toISODateString(eventTime)
   let entity = LPRevenueDaily.load(id)
 
   if (entity == null) {
@@ -207,7 +207,7 @@ export function ensureAccumulatedProtocolFeeDaily(
   address: Bytes,
   eventTime: BigInt
 ): AccumulatedProtocolFeeDaily {
-  const id = address.toHex() + '/' + toISODateString(eventTime)
+  const id = address.toHex() + '-' + toISODateString(eventTime)
   let entity = AccumulatedProtocolFeeDaily.load(id)
 
   if (entity == null) {
@@ -246,9 +246,9 @@ export function ensureAssetEntity(
 }
 
 export function toAssetId(address: Bytes, assetId: BigInt): string {
-  return address.toHex() + '/' + assetId.toString()
+  return address.toHex() + '-' + assetId.toString()
 }
 
 export function toVaultId(address: Bytes, vaultId: BigInt): string {
-  return address.toHex() + '/' + vaultId.toString()
+  return address.toHex() + '-' + vaultId.toString()
 }

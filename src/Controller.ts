@@ -41,7 +41,7 @@ import {
 import { controllerContract } from './contracts'
 import { ONE } from './constants'
 
-export function handleOperatorUpdated(event: OperatorUpdated): void {}
+export function handleOperatorUpdated(event: OperatorUpdated): void { }
 
 export function handlePairAdded(event: PairAdded): void {
   const asset = ensureAssetEntity(
@@ -326,14 +326,14 @@ function updatePosition(
   if (!tradeAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-        '/' +
-        logIndex.toString() +
-        '/' +
-        vaultId.toString() +
-        '/perp'
+      '-' +
+      logIndex.toString() +
+      '-' +
+      vaultId.toString() +
+      '-perp'
     )
 
-    historyItem.vault = vaultId.toString()
+    historyItem.vault = toVaultId(controllerAddress, vaultId)
     historyItem.assetId = assetId
     historyItem.action = 'POSITION'
     historyItem.product = 'PERP'
@@ -349,11 +349,11 @@ function updatePosition(
   if (!tradeSqrtAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-        '/' +
-        logIndex.toString() +
-        '/' +
-        vaultId.toString() +
-        '/sqrt'
+      '-' +
+      logIndex.toString() +
+      '-' +
+      vaultId.toString() +
+      '-sqrt'
     )
 
     historyItem.vault = vaultId.toString()
@@ -399,9 +399,9 @@ export function handleFeeCollected(event: FeeCollected): void {
 export function handleRebalanced(event: Rebalanced): void {
   const id =
     event.transaction.hash.toHex() +
-    '/' +
+    '-' +
     event.transactionLogIndex.toString() +
-    '/' +
+    '-' +
     event.params.assetId.toString()
 
   const item = new RebalanceHistoryItem(id)
