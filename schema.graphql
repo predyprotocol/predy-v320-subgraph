@@ -66,6 +66,22 @@ type TradeHistoryItem @entity {
   createdAt: BigInt!
 }
 
+enum LendingAction {
+  DEPOSIT
+  WITHDRAW
+}
+
+type LendingUserHistoryItem @entity {
+  id: ID!
+  address: Bytes!
+  assetId: BigInt!
+  account: Bytes! # address
+  action: LendingAction!
+  assetAmount: BigInt!
+  txHash: String!
+  createdAt: BigInt!
+}
+
 enum StrategyAction {
   DEPOSIT
   WITHDRAW
@@ -116,7 +132,7 @@ type RebalanceHistoryItem @entity {
 }
 
 type LPRevenueDaily @entity {
-  id: ID! # address/yyyy-MM-dd
+  id: ID! # address-yyyy-MM-dd
   fee0: BigInt!
   fee1: BigInt!
   premiumSupply: BigInt!
@@ -130,7 +146,7 @@ type LPRevenueDaily @entity {
 }
 
 type AccumulatedProtocolFeeDaily @entity {
-  id: ID! # address/yyyy-MM-dd
+  id: ID! # address-yyyy-MM-dd
   accumulatedProtocolFee0: BigInt!
   accumulatedProtocolFee1: BigInt!
   withdrawnProtocolFee0: BigInt!
@@ -155,4 +171,13 @@ type InterestGrowthTx @entity {
   accumulatedFee0: BigInt!
   accumulatedFee1: BigInt!
   createdAt: BigInt!
+}
+
+type InterestDaily @entity {
+  id: ID! # address-assetId-yyyy-MM-dd
+  assetId: BigInt!
+  assetScaler: BigInt!
+  debtScaler: BigInt!
+  createdAt: BigInt!
+  updatedAt: BigInt!
 }

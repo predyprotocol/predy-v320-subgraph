@@ -1,6 +1,6 @@
-import { ethereum, BigInt, Address } from "@graphprotocol/graph-ts"
+import { ethereum, BigInt, Address, Bytes, ByteArray } from "@graphprotocol/graph-ts"
 import { newMockEvent } from "matchstick-as/assembly/index"
-import { FeeCollected, PositionUpdated } from "../generated/Controller/Controller"
+import { FeeCollected, PositionUpdated, TokenSupplied, TokenWithdrawn } from "../generated/Controller/Controller"
 
 export function createPositionUpdated(vaultId: BigInt, assetId: BigInt, tradeAmount: BigInt, tradeSqrtAmount: BigInt, fee: BigInt): PositionUpdated {
   let positionUpdatedEvent = changetype<PositionUpdated>(newMockEvent())
@@ -49,4 +49,41 @@ export function createFeeCollectedEvent(vaultId: BigInt, assetId: BigInt, feeCol
   feeCollectedEvent.parameters.push(feeCollectedParam)
 
   return feeCollectedEvent
+}
+
+
+export function createTokenSuppliedEvent(assetId: BigInt, suppliedAmount: BigInt): TokenSupplied {
+  let tokenSuppliedEvent = changetype<TokenSupplied>(newMockEvent())
+
+  tokenSuppliedEvent.address = Address.zero()
+
+  tokenSuppliedEvent.parameters = new Array()
+
+  let accountParam = new ethereum.EventParam("account", ethereum.Value.fromAddress(Address.zero()))
+  let assetIdParam = new ethereum.EventParam("assetId", ethereum.Value.fromUnsignedBigInt(assetId))
+  let suppliedAmountParam = new ethereum.EventParam("suppliedAmount", ethereum.Value.fromUnsignedBigInt(suppliedAmount))
+
+  tokenSuppliedEvent.parameters.push(accountParam)
+  tokenSuppliedEvent.parameters.push(assetIdParam)
+  tokenSuppliedEvent.parameters.push(suppliedAmountParam)
+
+  return tokenSuppliedEvent
+}
+
+export function createTokenWithdrawnEvent(assetId: BigInt, finalWithdrawnAmount: BigInt): TokenWithdrawn {
+  let tokenWithdrawnEvent = changetype<TokenWithdrawn>(newMockEvent())
+
+  tokenWithdrawnEvent.address = Address.zero()
+
+  tokenWithdrawnEvent.parameters = new Array()
+
+  let accountParam = new ethereum.EventParam("account", ethereum.Value.fromAddress(Address.zero()))
+  let assetIdParam = new ethereum.EventParam("assetId", ethereum.Value.fromUnsignedBigInt(assetId))
+  let finalWithdrawnAmountParam = new ethereum.EventParam("finalWithdrawnAmount", ethereum.Value.fromUnsignedBigInt(finalWithdrawnAmount))
+
+  tokenWithdrawnEvent.parameters.push(accountParam)
+  tokenWithdrawnEvent.parameters.push(assetIdParam)
+  tokenWithdrawnEvent.parameters.push(finalWithdrawnAmountParam)
+
+  return tokenWithdrawnEvent
 }
