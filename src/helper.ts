@@ -11,6 +11,7 @@ import {
   TradeHistoryItem,
   UniFeeGrowthHourly
 } from '../generated/schema'
+import { InterestGrowthUpdated } from '../generated/Controller/Controller'
 
 export function ensureOpenPosition(
   controllerAddress: Bytes,
@@ -182,11 +183,13 @@ export function ensureTotalTokensEntity(
 }
 
 export function ensureInterestGrowthTx(
-  address: Bytes,
-  assetId: BigInt,
+  event: InterestGrowthUpdated,
   count: BigInt,
-  eventTime: BigInt
 ): InterestGrowthTx {
+  const address = event.address
+  const assetId = event.params.assetId
+  const eventTime = event.block.timestamp
+
   const id = `${address.toHex()}-${assetId.toString()}-${count.toString()}`
   let entity = InterestGrowthTx.load(id)
 
@@ -198,6 +201,12 @@ export function ensureInterestGrowthTx(
     entity.accumulatedPremiumBorrow = BigInt.zero()
     entity.accumulatedFee0 = BigInt.zero()
     entity.accumulatedFee1 = BigInt.zero()
+    entity.assetGrowth = event.params.assetGrowth
+    entity.debtGrowth = event.params.debtGrowth
+    entity.supplyPremiumGrowth = event.params.supplyPremiumGrowth
+    entity.borrowPremiumGrowth = event.params.borrowPremiumGrowth
+    entity.fee0Growth = event.params.fee0Growth
+    entity.fee1Growth = event.params.fee1Growth
     entity.createdAt = eventTime
   }
 
