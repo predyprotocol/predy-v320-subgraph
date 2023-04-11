@@ -238,8 +238,8 @@ export function ensureInterestDaily(
   if (entity == null) {
     entity = new InterestDaily(id)
     entity.assetId = assetId
-    entity.assetScaler = BigInt.fromI32(0)
-    entity.debtScaler = BigInt.fromI32(0)
+    entity.assetGrowth = BigInt.fromI32(0)
+    entity.debtGrowth = BigInt.fromI32(0)
     entity.createdAt = eventTime
     entity.updatedAt = eventTime
   }

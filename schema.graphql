@@ -176,8 +176,8 @@ type InterestGrowthTx @entity {
 type InterestDaily @entity {
   id: ID! # address-assetId-yyyy-MM-dd
   assetId: BigInt!
-  assetScaler: BigInt!
-  debtScaler: BigInt!
+  assetGrowth: BigInt!
+  debtGrowth: BigInt!
   createdAt: BigInt!
   updatedAt: BigInt!
 }

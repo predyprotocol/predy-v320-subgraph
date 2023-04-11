@@ -165,8 +165,8 @@ export function updateInterestDaily(
 
   const entity = ensureInterestDaily(event.address, assetId, timestamp)
 
-  entity.assetScaler = event.params.assetGrowth
-  entity.debtScaler = event.params.debtGrowth
+  entity.assetGrowth = event.params.assetGrowth
+  entity.debtGrowth = event.params.debtGrowth
   entity.updatedAt = timestamp
 
   entity.save()
