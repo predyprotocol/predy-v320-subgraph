@@ -34,12 +34,17 @@ import {
 } from './helper'
 import {
   updateFeeRevenue,
+  updateInterestDaily,
   updatePremiumRevenue,
   updateProtocolRevenue,
   updateTokenRevenue
 } from './revenue'
 import { controllerContract } from './contracts'
 import { ONE } from './constants'
+import {
+  createLendingDepositHistory,
+  createLendingWithdrawHistory
+} from './history'
 
 export function handleOperatorUpdated(event: OperatorUpdated): void { }
 
@@ -76,27 +81,53 @@ export function handleVaultCreated(event: VaultCreated): void {
 }
 
 export function handleTokenSupplied(event: TokenSupplied): void {
-  const asset = ensureAssetEntity(
-    event.address,
-    event.params.assetId,
-    event.block.timestamp
-  )
+  const assetId = event.params.assetId
+  const timestamp = event.block.timestamp
+  const suppliedAmount = event.params.suppliedAmount
 
-  asset.totalSupply = asset.totalSupply.plus(event.params.suppliedAmount)
+  const asset = ensureAssetEntity(event.address, assetId, timestamp)
+
+  asset.totalSupply = asset.totalSupply.plus(suppliedAmount)
+  asset.updatedAt = timestamp
 
   asset.save()
+
+  createLendingDepositHistory(
+    event.address,
+    assetId,
+    event.transaction.from,
+    event.transaction.hash.toHex(),
+    event.logIndex,
+    suppliedAmount,
+    timestamp
+  )
 }
 
 export function handleTokenWithdrawn(event: TokenWithdrawn): void {
+  const assetId = event.params.assetId
+  const timestamp = event.block.timestamp
+  const finalWithdrawnAmount = event.params.finalWithdrawnAmount
+
   const asset = ensureAssetEntity(
     event.address,
-    event.params.assetId,
-    event.block.timestamp
+    assetId,
+    timestamp
   )
 
-  asset.totalSupply = asset.totalSupply.minus(event.params.finalWithdrawnAmount)
+  asset.totalSupply = asset.totalSupply.minus(finalWithdrawnAmount)
+  asset.updatedAt = timestamp
 
   asset.save()
+
+  createLendingWithdrawHistory(
+    event.address,
+    assetId,
+    event.transaction.from,
+    event.transaction.hash.toHex(),
+    event.logIndex,
+    finalWithdrawnAmount,
+    timestamp
+  )
 }
 
 export function handleMarginUpdated(event: MarginUpdated): void {
@@ -473,6 +504,7 @@ export function handleInterestGrowthUpdated(
   }
   entity.save()
 
+  updateInterestDaily(event)
   updateProtocolRevenue(event)
 
   // Update AssetEntity, it will be used when this handler be called next time.

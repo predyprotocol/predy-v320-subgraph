@@ -3,6 +3,7 @@ import * as schema from '../generated/schema'
 import {
   ensureAccumulatedProtocolFeeDaily,
   ensureAssetEntity,
+  ensureInterestDaily,
   ensureInterestGrowthTx,
   ensureLPRevenueDaily
 } from './helper'
@@ -151,6 +152,23 @@ export function updateProtocolRevenue(
     // ETH
     entity.accumulatedProtocolFee1 = event.params.accumulatedProtocolRevenue
   }
+  entity.save()
+
+  return entity
+}
+
+export function updateInterestDaily(
+  event: InterestGrowthUpdated
+): schema.InterestDaily {
+  const assetId = event.params.assetId
+  const timestamp = event.block.timestamp
+
+  const entity = ensureInterestDaily(event.address, assetId, timestamp)
+
+  entity.assetScaler = event.params.assetGrowth
+  entity.debtScaler = event.params.debtGrowth
+  entity.updatedAt = timestamp
+
   entity.save()
 
   return entity
