@@ -46,7 +46,7 @@ import {
   createLendingWithdrawHistory
 } from './history'
 
-export function handleOperatorUpdated(event: OperatorUpdated): void { }
+export function handleOperatorUpdated(event: OperatorUpdated): void {}
 
 export function handlePairAdded(event: PairAdded): void {
   const asset = ensureAssetEntity(
@@ -108,11 +108,7 @@ export function handleTokenWithdrawn(event: TokenWithdrawn): void {
   const timestamp = event.block.timestamp
   const finalWithdrawnAmount = event.params.finalWithdrawnAmount
 
-  const asset = ensureAssetEntity(
-    event.address,
-    assetId,
-    timestamp
-  )
+  const asset = ensureAssetEntity(event.address, assetId, timestamp)
 
   asset.totalSupply = asset.totalSupply.minus(finalWithdrawnAmount)
   asset.updatedAt = timestamp
@@ -357,11 +353,11 @@ function updatePosition(
   if (!tradeAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-      '-' +
-      logIndex.toString() +
-      '-' +
-      vaultId.toString() +
-      '-perp'
+        '-' +
+        logIndex.toString() +
+        '-' +
+        vaultId.toString() +
+        '-perp'
     )
 
     historyItem.vault = toVaultId(controllerAddress, vaultId)
@@ -380,11 +376,11 @@ function updatePosition(
   if (!tradeSqrtAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-      '-' +
-      logIndex.toString() +
-      '-' +
-      vaultId.toString() +
-      '-sqrt'
+        '-' +
+        logIndex.toString() +
+        '-' +
+        vaultId.toString() +
+        '-sqrt'
     )
 
     historyItem.vault = vaultId.toString()

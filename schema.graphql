@@ -82,6 +82,16 @@ type LendingUserHistoryItem @entity {
   createdAt: BigInt!
 }
 
+type StrategyUserPosition @entity {
+  id: ID! # address-account
+  address: Bytes!
+  account: Bytes! # address
+  entryValue: BigInt!
+  strategyAmount: BigInt!
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
+
 enum StrategyAction {
   DEPOSIT
   WITHDRAW
@@ -94,6 +104,7 @@ type StrategyUserHistoryItem @entity {
   account: Bytes! # address
   strategyAmount: BigInt!
   marginAmount: BigInt!
+  payoff: BigInt
   txHash: String!
   createdAt: BigInt!
 }
