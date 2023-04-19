@@ -7,6 +7,7 @@ import {
   InterestGrowthTx,
   LPRevenueDaily,
   OpenPositionEntity,
+  StrategyUserPosition,
   TotalTokensEntity,
   TradeHistoryItem,
   UniFeeGrowthHourly
@@ -269,10 +270,39 @@ export function ensureAssetEntity(
   return entity
 }
 
+export function ensureStrategyUserPosition(
+  address: Bytes,
+  account: Bytes,
+  eventTime: BigInt
+): StrategyUserPosition {
+  const id = toStrategyUserPositionId(address, account)
+  let entity = StrategyUserPosition.load(id)
+
+  if (entity == null) {
+    entity = new StrategyUserPosition(id)
+    entity.address = address
+    entity.account = account
+    entity.entryValue = BigInt.zero()
+    entity.strategyAmount = BigInt.zero()
+    entity.createdAt = eventTime
+  }
+
+  entity.updatedAt = eventTime
+
+  return entity
+}
+
 export function toAssetId(address: Bytes, assetId: BigInt): string {
   return address.toHex() + '-' + assetId.toString()
 }
 
 export function toVaultId(address: Bytes, vaultId: BigInt): string {
   return address.toHex() + '-' + vaultId.toString()
+}
+
+export function toStrategyUserPositionId(
+  address: Bytes,
+  account: Bytes
+): string {
+  return address.toHex() + '-' + account.toHex()
 }
