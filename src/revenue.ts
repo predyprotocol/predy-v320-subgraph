@@ -2,7 +2,6 @@ import { InterestGrowthUpdated } from '../generated/Controller/Controller'
 import * as schema from '../generated/schema'
 import {
   ensureAccumulatedProtocolFeeDaily,
-  ensureAssetEntity,
   ensureInterestDaily,
   ensureInterestGrowthTx,
   ensureLPRevenueDaily
@@ -19,42 +18,31 @@ export function updateTokenRevenue(
 
   const lpRevenuDaily = ensureLPRevenueDaily(event.address, timestamp)
 
-  const asset = ensureAssetEntity(event.address, assetId, timestamp)
-  const totalSupply = asset.totalSupply
-  const totalBorrow = asset.totalBorrow
-
   const prevEntity = ensureInterestGrowthTx(
-    event.address,
-    assetId,
-    totalTokens.growthCount,
-    timestamp
+    event,
+    totalTokens.growthCount.minus(BigInt.fromU32(1)),
   )
 
-  // Token Fee
-  const accumulatedInterests = event.params.assetGrowth.times(totalSupply)
-  const prevAccumulatedInterests = prevEntity.accumulatedInterests
-
-  const accumulatedDebts = event.params.debtGrowth.times(totalBorrow)
-  const prevAccumulatedDebts = prevEntity.accumulatedDebts
+  const entity = ensureInterestGrowthTx(
+    event,
+    totalTokens.growthCount
+  )
 
   if (assetId.equals(BigInt.fromI32(1))) {
-    lpRevenuDaily.supplyInterest0 = lpRevenuDaily.supplyInterest0.plus(
-      accumulatedInterests.minus(prevAccumulatedInterests)
-    )
-    lpRevenuDaily.borrowInterest0 = lpRevenuDaily.borrowInterest0.plus(
-      accumulatedDebts.minus(prevAccumulatedDebts)
-    )
+    lpRevenuDaily.supplyInterest0 = entity.accumulatedInterests.minus(prevEntity.accumulatedInterests)
+    lpRevenuDaily.borrowInterest0 = entity.accumulatedDebts.minus(
+      prevEntity.accumulatedDebts
+    ) 
   } else if (assetId.equals(BigInt.fromI32(2))) {
-    lpRevenuDaily.supplyInterest1 = lpRevenuDaily.supplyInterest1.plus(
-      accumulatedInterests.minus(prevAccumulatedInterests)
-    )
-    lpRevenuDaily.borrowInterest1 = lpRevenuDaily.borrowInterest1.plus(
-      accumulatedDebts.minus(prevAccumulatedDebts)
+    lpRevenuDaily.supplyInterest1 = entity.accumulatedInterests.minus(
+      prevEntity.accumulatedInterests
+    ) 
+    lpRevenuDaily.borrowInterest1 = entity.accumulatedDebts.minus(
+      prevEntity.accumulatedDebts
     )
   }
 
   lpRevenuDaily.updatedAt = timestamp
-
   lpRevenuDaily.save()
 
   return lpRevenuDaily
@@ -64,38 +52,27 @@ export function updatePremiumRevenue(
   event: InterestGrowthUpdated,
   totalTokens: TotalTokensEntity
 ): LPRevenueDaily {
-  const assetId = event.params.assetId
   const timestamp = event.block.timestamp
 
   const lpRevenuDaily = ensureLPRevenueDaily(event.address, timestamp)
 
   const prevEntity = ensureInterestGrowthTx(
-    event.address,
-    assetId,
+    event,
+    totalTokens.growthCount.minus(BigInt.fromU32(1)),
+  )
+
+  const entity = ensureInterestGrowthTx(
+    event,
     totalTokens.growthCount,
-    timestamp
   )
 
-  const asset = ensureAssetEntity(event.address, assetId, timestamp)
-  const sqrtTotalSupply = asset.sqrtTotalSupply
-  const sqrtTotalBorrow = asset.sqrtTotalBorrow
-
-  const accumulatedPremiumSupply =
-    event.params.supplyPremiumGrowth.times(sqrtTotalSupply)
-  const prevAccumulatedPremiumSupply = prevEntity.accumulatedPremiumSupply
-
-  lpRevenuDaily.premiumSupply = lpRevenuDaily.premiumSupply.plus(
-    accumulatedPremiumSupply.minus(prevAccumulatedPremiumSupply)
+  lpRevenuDaily.premiumSupply = entity.accumulatedPremiumSupply.minus(
+    prevEntity.accumulatedPremiumSupply
   )
-
-  const accumulatedPremiumBorrow =
-    event.params.borrowPremiumGrowth.times(sqrtTotalBorrow)
-  const prevAccumulatedPremiumBorrow = prevEntity.accumulatedPremiumBorrow
-
-  lpRevenuDaily.premiumBorrow = lpRevenuDaily.premiumBorrow.plus(
-    accumulatedPremiumBorrow.minus(prevAccumulatedPremiumBorrow)
+  lpRevenuDaily.premiumBorrow = entity.accumulatedPremiumBorrow.minus(
+    prevEntity.accumulatedPremiumBorrow
   )
-
+    
   lpRevenuDaily.updatedAt = timestamp
   lpRevenuDaily.save()
 
@@ -106,30 +83,22 @@ export function updateFeeRevenue(
   event: InterestGrowthUpdated,
   totalTokens: TotalTokensEntity
 ): LPRevenueDaily {
-  const assetId = event.params.assetId
   const timestamp = event.block.timestamp
 
   const lpRevenuDaily = ensureLPRevenueDaily(event.address, timestamp)
 
   const prevEntity = ensureInterestGrowthTx(
-    event.address,
-    assetId,
+    event,
+    totalTokens.growthCount.minus(BigInt.fromU32(1)),
+  )
+
+  const entity = ensureInterestGrowthTx(
+    event,
     totalTokens.growthCount,
-    timestamp
   )
 
-  const asset = ensureAssetEntity(event.address, assetId, timestamp)
-  const sqrtTotalSupply = asset.sqrtTotalSupply
-
-  const fee0 = event.params.fee0Growth.times(sqrtTotalSupply)
-  const fee1 = event.params.fee1Growth.times(sqrtTotalSupply)
-
-  lpRevenuDaily.fee0 = lpRevenuDaily.fee0.plus(
-    fee0.minus(prevEntity.accumulatedFee0)
-  )
-  lpRevenuDaily.fee1 = lpRevenuDaily.fee1.plus(
-    fee1.minus(prevEntity.accumulatedFee1)
-  )
+  lpRevenuDaily.fee0 = entity.accumulatedFee0.minus(prevEntity.accumulatedFee0)
+  lpRevenuDaily.fee1 = entity.accumulatedFee1.minus(prevEntity.accumulatedFee1)
 
   lpRevenuDaily.updatedAt = timestamp
   lpRevenuDaily.save()

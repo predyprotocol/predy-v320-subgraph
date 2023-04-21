@@ -456,23 +456,6 @@ export function handleInterestGrowthUpdated(
 
   const previousAsset = ensureAssetEntity(event.address, assetId, timestamp)
 
-  if (
-    totalTokens.growthCount.gt(BigInt.zero()) &&
-    previousAsset.totalSupply.gt(BigInt.zero()) &&
-    previousAsset.totalBorrow.gt(BigInt.zero())
-  ) {
-    updateTokenRevenue(event, totalTokens)
-  }
-
-  if (
-    assetId.notEqual(BigInt.fromI32(1)) &&
-    previousAsset.sqrtTotalSupply.gt(BigInt.zero()) &&
-    previousAsset.sqrtTotalBorrow.gt(BigInt.zero())
-  ) {
-    updatePremiumRevenue(event, totalTokens)
-    updateFeeRevenue(event, totalTokens)
-  }
-
   // Load previous InterestGrowthTx Entity, it's needed for calculating accumulated interests and debts
   const previousEntity = ensureInterestGrowthTx(
     event,
@@ -553,4 +536,22 @@ export function handleInterestGrowthUpdated(
 
   asset.updatedAt = timestamp
   asset.save()
+
+  if (
+    totalTokens.growthCount.gt(BigInt.fromU32(1)) &&
+    previousAsset.totalSupply.gt(BigInt.zero()) &&
+    previousAsset.totalBorrow.gt(BigInt.zero())
+  ) {
+    updateTokenRevenue(event, totalTokens)
+  }
+
+  if (
+    assetId.notEqual(BigInt.fromI32(1)) &&
+    previousAsset.sqrtTotalSupply.gt(BigInt.zero()) &&
+    previousAsset.sqrtTotalBorrow.gt(BigInt.zero())
+  ) {
+    updatePremiumRevenue(event, totalTokens)
+    updateFeeRevenue(event, totalTokens)
+  }
+
 }
