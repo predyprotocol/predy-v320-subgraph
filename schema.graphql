@@ -181,6 +181,12 @@ type InterestGrowthTx @entity {
   accumulatedPremiumBorrow: BigInt!
   accumulatedFee0: BigInt!
   accumulatedFee1: BigInt!
+  assetGrowth: BigInt!
+  debtGrowth: BigInt!
+  supplyPremiumGrowth: BigInt!
+  borrowPremiumGrowth: BigInt!
+  fee0Growth: BigInt!
+  fee1Growth: BigInt!
   createdAt: BigInt!
 }
 

@@ -450,52 +450,58 @@ export function handleInterestGrowthUpdated(
 
   const totalTokens = ensureTotalTokensEntity(event.address, assetId, timestamp)
 
-  const asset = ensureAssetEntity(event.address, assetId, timestamp)
+  const previousAsset = ensureAssetEntity(event.address, assetId, timestamp)
 
-  if (
-    totalTokens.growthCount.gt(BigInt.zero()) &&
-    asset.totalSupply.gt(BigInt.zero()) &&
-    asset.totalBorrow.gt(BigInt.zero())
-  ) {
-    updateTokenRevenue(event, totalTokens)
-  }
-
-  if (
-    assetId.notEqual(BigInt.fromI32(1)) &&
-    asset.sqrtTotalSupply.gt(BigInt.zero()) &&
-    asset.sqrtTotalBorrow.gt(BigInt.zero())
-  ) {
-    updatePremiumRevenue(event, totalTokens)
-    updateFeeRevenue(event, totalTokens)
-  }
-
-  // Create InterestGrowthTx Entity
+  // Load previous InterestGrowthTx Entity, it's needed for calculating accumulated interests and debts
+  const previousEntity = ensureInterestGrowthTx(
+    event,
+    totalTokens.growthCount,
+  )
   totalTokens.growthCount = totalTokens.growthCount.plus(BigInt.fromU32(1))
   totalTokens.save()
+
+  // Create InterestGrowthTx Entity
   const entity = ensureInterestGrowthTx(
-    event.address,
-    assetId,
+    event,
     totalTokens.growthCount,
-    timestamp
   )
 
-  entity.accumulatedInterests = event.params.assetGrowth.times(
-    asset.totalSupply
+  entity.accumulatedInterests = previousEntity.accumulatedInterests.plus(
+    event.params.assetGrowth
+      .minus(previousEntity.assetGrowth)
+      .times(previousAsset.totalSupply)
   )
-  entity.accumulatedDebts = event.params.debtGrowth.times(asset.totalBorrow)
+  entity.accumulatedDebts = previousEntity.accumulatedDebts.plus(
+    event.params.debtGrowth
+      .minus(previousEntity.debtGrowth)
+      .times(previousAsset.totalBorrow)
+  )
 
   if (assetId.notEqual(BigInt.fromI32(1))) {
-    entity.accumulatedPremiumSupply = event.params.supplyPremiumGrowth.times(
-      asset.sqrtTotalSupply
+    entity.accumulatedPremiumSupply =
+      previousEntity.accumulatedPremiumSupply.plus(
+        event.params.supplyPremiumGrowth
+          .minus(previousEntity.supplyPremiumGrowth)
+          .times(previousAsset.sqrtTotalSupply)
+      )
+
+    entity.accumulatedPremiumBorrow =
+      previousEntity.accumulatedPremiumBorrow.plus(
+        event.params.borrowPremiumGrowth
+          .minus(previousEntity.borrowPremiumGrowth)
+          .times(previousAsset.sqrtTotalBorrow)
+      )
+
+    entity.accumulatedFee0 = previousEntity.accumulatedFee0.plus(
+      event.params.fee0Growth
+        .minus(previousEntity.fee0Growth)
+        .times(previousAsset.sqrtTotalSupply)
     )
-    entity.accumulatedPremiumBorrow = event.params.borrowPremiumGrowth.times(
-      asset.sqrtTotalBorrow
-    )
-    entity.accumulatedFee0 = event.params.fee0Growth.times(
-      asset.sqrtTotalSupply
-    )
-    entity.accumulatedFee1 = event.params.fee1Growth.times(
-      asset.sqrtTotalSupply
+
+    entity.accumulatedFee1 = previousEntity.accumulatedFee1.plus(
+      event.params.fee1Growth
+        .minus(previousEntity.fee1Growth)
+        .times(previousAsset.sqrtTotalSupply)
     )
   }
   entity.save()
@@ -507,6 +513,8 @@ export function handleInterestGrowthUpdated(
   const currentAsset = controllerContract.getAsset(assetId)
   const tokenStatus = currentAsset.tokenStatus
 
+  // Update AssetEntity
+  const asset = previousAsset
   asset.totalSupply = tokenStatus.totalCompoundDeposited
     .times(tokenStatus.assetScaler)
     .div(ONE)
@@ -524,4 +532,22 @@ export function handleInterestGrowthUpdated(
 
   asset.updatedAt = timestamp
   asset.save()
+
+  if (
+    totalTokens.growthCount.gt(BigInt.fromU32(1)) &&
+    previousAsset.totalSupply.gt(BigInt.zero()) &&
+    previousAsset.totalBorrow.gt(BigInt.zero())
+  ) {
+    updateTokenRevenue(event, totalTokens)
+  }
+
+  if (
+    assetId.notEqual(BigInt.fromI32(1)) &&
+    previousAsset.sqrtTotalSupply.gt(BigInt.zero()) &&
+    previousAsset.sqrtTotalBorrow.gt(BigInt.zero())
+  ) {
+    updatePremiumRevenue(event, totalTokens)
+    updateFeeRevenue(event, totalTokens)
+  }
+
 }
