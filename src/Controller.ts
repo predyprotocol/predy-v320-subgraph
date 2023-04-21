@@ -383,7 +383,7 @@ function updatePosition(
         '-sqrt'
     )
 
-    historyItem.vault = vaultId.toString()
+    historyItem.vault = toVaultId(controllerAddress, vaultId)
     historyItem.assetId = assetId
     historyItem.action = 'POSITION'
     historyItem.product = 'SQRT'
