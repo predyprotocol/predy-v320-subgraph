@@ -4,6 +4,7 @@ generated
 
 # auto-generated
 subgraph.yaml
+subgraph-uni.yaml
 src/contracts.ts
 
 # graph
