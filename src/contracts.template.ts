@@ -1,6 +1,6 @@
 import { Address } from '@graphprotocol/graph-ts'
 import { Controller } from '../generated/Controller/Controller'
-import { GammaShortStrategy } from '../generated/GammaShortStrategy/GammaShortStrategy'
+import { GammaShortStrategy } from '../generated/WethGammaShortStrategy/GammaShortStrategy'
 
 export const controllerAddress: Address = Address.fromString('{{Controller}}')
 export const wethGammaShortStrategyAddress: Address = Address.fromString(
