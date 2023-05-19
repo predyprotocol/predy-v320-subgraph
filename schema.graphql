@@ -198,3 +198,14 @@ type InterestDaily @entity {
   createdAt: BigInt!
   updatedAt: BigInt!
 }
+
+type OpenInterest @entity {
+  id: ID! # assetId
+  assetId: BigInt!
+  longPerp: BigInt!
+  shortPerp: BigInt!
+  longSquart: BigInt!
+  shortSquart: BigInt!
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}

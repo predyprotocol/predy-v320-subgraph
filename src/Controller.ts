@@ -45,8 +45,9 @@ import {
   createLendingDepositHistory,
   createLendingWithdrawHistory
 } from './history'
+import { updateOpenInterest } from './OpenInterest'
 
-export function handleOperatorUpdated(event: OperatorUpdated): void {}
+export function handleOperatorUpdated(event: OperatorUpdated): void { }
 
 export function handlePairAdded(event: PairAdded): void {
   const asset = ensureAssetEntity(
@@ -304,6 +305,17 @@ function updatePosition(
     timestamp
   )
 
+  // Update OI
+  updateOpenInterest(
+    controllerAddress,
+    assetId,
+    timestamp,
+    openPosition.tradeAmount,
+    tradeAmount,
+    openPosition.sqrtTradeAmount,
+    tradeSqrtAmount
+  )
+
   openPosition.tradeAmount = openPosition.tradeAmount.plus(tradeAmount)
   openPosition.sqrtTradeAmount =
     openPosition.sqrtTradeAmount.plus(tradeSqrtAmount)
@@ -353,11 +365,11 @@ function updatePosition(
   if (!tradeAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-        '-' +
-        logIndex.toString() +
-        '-' +
-        vaultId.toString() +
-        '-perp'
+      '-' +
+      logIndex.toString() +
+      '-' +
+      vaultId.toString() +
+      '-perp'
     )
 
     historyItem.vault = toVaultId(controllerAddress, vaultId)
@@ -376,11 +388,11 @@ function updatePosition(
   if (!tradeSqrtAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-        '-' +
-        logIndex.toString() +
-        '-' +
-        vaultId.toString() +
-        '-sqrt'
+      '-' +
+      logIndex.toString() +
+      '-' +
+      vaultId.toString() +
+      '-sqrt'
     )
 
     historyItem.vault = toVaultId(controllerAddress, vaultId)
