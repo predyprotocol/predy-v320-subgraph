@@ -199,8 +199,18 @@ type InterestDaily @entity {
   updatedAt: BigInt!
 }
 
-type OpenInterest @entity {
-  id: ID! # assetId
+type OpenInterestTotal @entity {
+  id: ID! # address-assetId
+  assetId: BigInt!
+  longPerp: BigInt!
+  shortPerp: BigInt!
+  longSquart: BigInt!
+  shortSquart: BigInt!
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
+type OpenInterestDaily @entity {
+  id: ID! # address-assetId-yyyy-MM-dd
   assetId: BigInt!
   longPerp: BigInt!
   shortPerp: BigInt!

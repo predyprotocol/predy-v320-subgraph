@@ -6,6 +6,8 @@ import {
   InterestDaily,
   InterestGrowthTx,
   LPRevenueDaily,
+  OpenInterestDaily,
+  OpenInterestTotal,
   OpenPositionEntity,
   StrategyUserPosition,
   TotalTokensEntity,
@@ -127,6 +129,54 @@ export function ensureUniFeeGrowthHourly(
   }
 
   return entity
+}
+
+export function ensureOpenInterestDaily(
+  controllerAddress: Bytes,
+  assetId: BigInt,
+  eventTime: BigInt
+): OpenInterestDaily {
+  const id = controllerAddress.toHex() + '-' + assetId.toString() + '-' + toISODateString(eventTime)
+
+  let openInterest = OpenInterestDaily.load(id)
+
+  if (openInterest == null) {
+    openInterest = new OpenInterestDaily(id)
+    openInterest.assetId = assetId
+    openInterest.longPerp = BigInt.zero()
+    openInterest.shortPerp = BigInt.zero()
+    openInterest.longSquart = BigInt.zero()
+    openInterest.shortSquart = BigInt.zero()
+    openInterest.createdAt = eventTime
+  }
+
+  openInterest.updatedAt = eventTime
+
+  return openInterest
+}
+
+export function ensureOpenInterestTotal(
+  controllerAddress: Bytes,
+  assetId: BigInt,
+  eventTime: BigInt
+): OpenInterestTotal {
+  const id = controllerAddress.toHex() + '-' + assetId.toString()
+
+  let openInterest = OpenInterestTotal.load(id)
+
+  if (openInterest == null) {
+    openInterest = new OpenInterestTotal(id)
+    openInterest.assetId = assetId
+    openInterest.longPerp = BigInt.zero()
+    openInterest.shortPerp = BigInt.zero()
+    openInterest.longSquart = BigInt.zero()
+    openInterest.shortSquart = BigInt.zero()
+    openInterest.createdAt = eventTime
+  }
+
+  openInterest.updatedAt = eventTime
+
+  return openInterest
 }
 
 function toHourlyId(timestamp: BigInt): string {

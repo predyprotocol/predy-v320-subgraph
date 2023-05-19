@@ -1,5 +1,5 @@
 import { BigInt, Bytes } from '@graphprotocol/graph-ts'
-import { OpenInterest } from '../generated/schema'
+import { ensureOpenInterestDaily, ensureOpenInterestTotal } from './helper'
 
 class NextOpenInterest {
   nextTotalLong: BigInt
@@ -11,33 +11,6 @@ class OpenAndCloseAmount {
   closeAmount: BigInt
 }
 
-export function ensureOpenInterest(
-  controllerAddress: Bytes,
-  assetId: BigInt,
-  eventTime: BigInt
-): OpenInterest {
-  const id =
-    controllerAddress.toHex() +
-    '-' +
-    assetId.toString()
-
-  let openInterest = OpenInterest.load(id)
-
-  if (openInterest == null) {
-    openInterest = new OpenInterest(id)
-    openInterest.assetId = assetId
-    openInterest.longPerp = BigInt.zero()
-    openInterest.shortPerp = BigInt.zero()
-    openInterest.longSquart = BigInt.zero()
-    openInterest.shortSquart = BigInt.zero()
-    openInterest.createdAt = eventTime
-  }
-
-  openInterest.updatedAt = eventTime
-
-  return openInterest
-}
-
 export function updateOpenInterest(
   controllerAddress: Bytes,
   assetId: BigInt,
@@ -47,17 +20,24 @@ export function updateOpenInterest(
   vaultSqrtAmount: BigInt,
   tradeSqrtAmount: BigInt
 ): void {
-  const openInterst = ensureOpenInterest(controllerAddress, assetId, eventTime)
+  const openInterstDaily = ensureOpenInterestDaily(controllerAddress, assetId, eventTime)
+  const openInterstTotal = ensureOpenInterestTotal(controllerAddress, assetId, eventTime)
 
-  const nextPerpPosition = calculateOpenInterest(openInterst.longPerp, openInterst.shortPerp, vaultAmount, tradeAmount)
-  const nextSqrtPosition = calculateOpenInterest(openInterst.longSquart, openInterst.shortSquart, vaultSqrtAmount, tradeSqrtAmount)
+  const nextPerpPosition = calculateOpenInterest(openInterstTotal.longPerp, openInterstTotal.shortPerp, vaultAmount, tradeAmount)
+  const nextSqrtPosition = calculateOpenInterest(openInterstTotal.longSquart, openInterstTotal.shortSquart, vaultSqrtAmount, tradeSqrtAmount)
 
-  openInterst.longPerp = nextPerpPosition.nextTotalLong
-  openInterst.shortPerp = nextPerpPosition.nextTotalShort
-  openInterst.longSquart = nextSqrtPosition.nextTotalLong
-  openInterst.shortSquart = nextSqrtPosition.nextTotalShort
+  openInterstTotal.longPerp = nextPerpPosition.nextTotalLong
+  openInterstTotal.shortPerp = nextPerpPosition.nextTotalShort
+  openInterstTotal.longSquart = nextSqrtPosition.nextTotalLong
+  openInterstTotal.shortSquart = nextSqrtPosition.nextTotalShort
 
-  openInterst.save()
+  openInterstDaily.longPerp = nextPerpPosition.nextTotalLong
+  openInterstDaily.shortPerp = nextPerpPosition.nextTotalShort
+  openInterstDaily.longSquart = nextSqrtPosition.nextTotalLong
+  openInterstDaily.shortSquart = nextSqrtPosition.nextTotalShort
+
+  openInterstTotal.save()
+  openInterstDaily.save()
 }
 
 function calculateOpenInterest(
