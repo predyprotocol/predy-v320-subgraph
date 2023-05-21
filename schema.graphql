@@ -118,6 +118,21 @@ type UniFeeGrowthHourly @entity {
   updatedAt: BigInt!
 }
 
+enum Interval {
+  HOURLY
+  DAILY
+}
+
+type AggregatedUniswapPriceEntity @entity {
+  id: ID! # address-interval-open
+  address: Bytes!
+  interval: Interval!
+  openTimestamp: BigInt!
+  closeTimestamp: BigInt!
+  openPrice: BigInt!
+  closePrice: BigInt!
+}
+
 type RebalanceHistoryItem @entity {
   id: ID!
   asset: AssetEntity!
