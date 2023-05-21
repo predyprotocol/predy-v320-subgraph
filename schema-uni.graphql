@@ -1,0 +1,14 @@
+enum Interval {
+  HOURLY
+  DAILY
+}
+
+type AggregatedUniswapPriceEntity @entity {
+  id: ID! # address-interval-open
+  address: Bytes!
+  interval: Interval!
+  openTimestamp: BigInt!
+  closeTimestamp: BigInt!
+  openPrice: BigInt!
+  closePrice: BigInt!
+}
