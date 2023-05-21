@@ -97,8 +97,12 @@ export function updateFeeRevenue(
     totalTokens.growthCount,
   )
 
-  lpRevenuDaily.fee0 = entity.accumulatedFee0.minus(prevEntity.accumulatedFee0)
-  lpRevenuDaily.fee1 = entity.accumulatedFee1.minus(prevEntity.accumulatedFee1)
+  lpRevenuDaily.fee0 = lpRevenuDaily.fee0.plus(
+    entity.accumulatedFee0.minus(prevEntity.accumulatedFee0)
+  )
+  lpRevenuDaily.fee1 = lpRevenuDaily.fee1.plus(
+    entity.accumulatedFee1.minus(prevEntity.accumulatedFee1)
+  )
 
   lpRevenuDaily.updatedAt = timestamp
   lpRevenuDaily.save()
