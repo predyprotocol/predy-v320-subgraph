@@ -46,8 +46,8 @@ function calculateOpenInterest(
   vaultAmount: BigInt,
   tradeAmount: BigInt
 ): NextOpenInterest {
-  let nextTotalLong = BigInt.zero()
-  let nextTotalShort = BigInt.zero()
+  let nextTotalLong = totalLong
+  let nextTotalShort = totalShort
 
   const openAndCloseAmounts = calculateOpenAndCloseAmounts(vaultAmount, tradeAmount)
   const openAmount = openAndCloseAmounts.openAmount
