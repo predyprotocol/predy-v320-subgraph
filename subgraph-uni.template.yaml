@@ -8,7 +8,7 @@ dataSources:
     source:
       address: "{{WethUniswapV3Pool}}"
       abi: UniswapV3Pool
-      startBlock: {{startBlock}}
+      startBlock: {{strategyStartBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
