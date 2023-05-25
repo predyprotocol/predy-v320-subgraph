@@ -29,16 +29,18 @@ export function updateTokenRevenue(
   )
 
   if (assetId.equals(BigInt.fromI32(1))) {
-    lpRevenuDaily.supplyInterest0 = entity.accumulatedInterests.minus(prevEntity.accumulatedInterests)
-    lpRevenuDaily.borrowInterest0 = entity.accumulatedDebts.minus(
-      prevEntity.accumulatedDebts
-    ) 
+    lpRevenuDaily.supplyInterest0 = lpRevenuDaily.supplyInterest0.plus(
+      entity.accumulatedInterests.minus(prevEntity.accumulatedInterests)
+    )
+    lpRevenuDaily.borrowInterest0 = lpRevenuDaily.borrowInterest0.plus(
+      entity.accumulatedDebts.minus(prevEntity.accumulatedDebts)
+    )
   } else if (assetId.equals(BigInt.fromI32(2))) {
-    lpRevenuDaily.supplyInterest1 = entity.accumulatedInterests.minus(
-      prevEntity.accumulatedInterests
-    ) 
-    lpRevenuDaily.borrowInterest1 = entity.accumulatedDebts.minus(
-      prevEntity.accumulatedDebts
+    lpRevenuDaily.supplyInterest1 = lpRevenuDaily.supplyInterest1.plus(
+      entity.accumulatedInterests.minus(prevEntity.accumulatedInterests)
+    )
+    lpRevenuDaily.borrowInterest1 = lpRevenuDaily.borrowInterest1.plus(
+      entity.accumulatedDebts.minus(prevEntity.accumulatedDebts)
     )
   }
 
@@ -66,11 +68,11 @@ export function updatePremiumRevenue(
     totalTokens.growthCount,
   )
 
-  lpRevenuDaily.premiumSupply = entity.accumulatedPremiumSupply.minus(
-    prevEntity.accumulatedPremiumSupply
+  lpRevenuDaily.premiumSupply = lpRevenuDaily.premiumSupply.plus(
+    entity.accumulatedPremiumSupply.minus(prevEntity.accumulatedPremiumSupply)
   )
-  lpRevenuDaily.premiumBorrow = entity.accumulatedPremiumBorrow.minus(
-    prevEntity.accumulatedPremiumBorrow
+  lpRevenuDaily.premiumBorrow = lpRevenuDaily.premiumBorrow.plus(
+    entity.accumulatedPremiumBorrow.minus(prevEntity.accumulatedPremiumBorrow)
   )
     
   lpRevenuDaily.updatedAt = timestamp
@@ -97,8 +99,12 @@ export function updateFeeRevenue(
     totalTokens.growthCount,
   )
 
-  lpRevenuDaily.fee0 = entity.accumulatedFee0.minus(prevEntity.accumulatedFee0)
-  lpRevenuDaily.fee1 = entity.accumulatedFee1.minus(prevEntity.accumulatedFee1)
+  lpRevenuDaily.fee0 = lpRevenuDaily.fee0.plus(
+    entity.accumulatedFee0.minus(prevEntity.accumulatedFee0)
+  )
+  lpRevenuDaily.fee1 = lpRevenuDaily.fee1.plus(
+    entity.accumulatedFee1.minus(prevEntity.accumulatedFee1)
+  )
 
   lpRevenuDaily.updatedAt = timestamp
   lpRevenuDaily.save()
