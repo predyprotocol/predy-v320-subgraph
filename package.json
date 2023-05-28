@@ -13,10 +13,12 @@
     "deploy:arbitrum": "graph deploy --product hosted-service predy-dev/predy-v320-arbitrum",
     "deploy-uni:arbitrum": "graph deploy --product hosted-service predy-dev/predy-v320-uni-arbitrum",
     "deploy:arbitrum-goerli": "graph deploy --product hosted-service predy-dev/predy-v320-arbitrum-goerli",
-    "deploy-uni:arbitrum-goerli": "graph deploy --product hosted-service predy-dev/predy-v320-uni-arbitrum-goerli"
+    "deploy-uni:arbitrum-goerli": "graph deploy --product hosted-service predy-dev/predy-v320-uni-arbitrum-goerli",
+    "deploy:studio:arbitrum": "graph deploy --studio predy-v320-arbitrum",
+    "deploy-uni:studio:arbitrum": "graph deploy --studio predy-v320-uni-arbitrum"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.36.1",
+    "@graphprotocol/graph-cli": "^0.50.1",
     "@graphprotocol/graph-ts": "0.29.0"
   },
   "devDependencies": {
