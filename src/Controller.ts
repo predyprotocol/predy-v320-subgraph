@@ -410,18 +410,32 @@ function updatePosition(
 }
 
 export function handleFeeCollected(event: FeeCollected): void {
+
   const openPosition = ensureOpenPosition(
     event.address,
     event.params.assetId,
     event.params.vaultId,
     event.block.timestamp
   )
-
+  
   openPosition.feeAmount = openPosition.feeAmount.plus(
     event.params.feeCollected
   )
 
+
   openPosition.save()
+
+  // Update vault margin
+  // TODO Where is this controllerAddressa coming from?
+  const vault = VaultEntity.load(
+    toVaultId(Bytes.fromUTF8('controllerAddress'), event.params.vaultId)
+  )
+
+  if (vault) {
+    vault.margin = vault.margin
+      .plus(event.params.feeCollected)
+  }
+
 
   if (!event.params.feeCollected.equals(BigInt.zero())) {
     createFeeHistory(
