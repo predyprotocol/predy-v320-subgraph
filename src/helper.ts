@@ -12,7 +12,8 @@ import {
   StrategyUserPosition,
   TotalTokensEntity,
   TradeHistoryItem,
-  UniFeeGrowthHourly
+  UniFeeGrowthHourly,
+  VaultMarginDaily
 } from '../generated/schema'
 import { InterestGrowthUpdated } from '../generated/Controller/Controller'
 
@@ -364,4 +365,26 @@ export function toStrategyUserPositionId(
   account: Bytes
 ): string {
   return address.toHex() + '-' + account.toHex()
+}
+
+export function ensureVaultMarginDaily(
+  controllerAddress: Bytes,
+  eventTime: BigInt
+): VaultMarginDaily {
+  const id =
+    controllerAddress.toHex() +
+    '-' +
+    toISODateString(eventTime)
+
+  let vaultMarginDaily = VaultMarginDaily.load(id)
+
+  if (vaultMarginDaily == null) {
+    vaultMarginDaily = new VaultMarginDaily(id)
+    vaultMarginDaily.margin = BigInt.zero()
+    vaultMarginDaily.createdAt = eventTime
+  }
+
+  vaultMarginDaily.updatedAt = eventTime
+
+  return vaultMarginDaily
 }
