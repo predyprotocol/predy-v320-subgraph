@@ -175,6 +175,7 @@ type TotalTokensEntity @entity {
 
 type InterestGrowthTx @entity {
   id: ID! # address/assetId - TotalTokensEntity.growthCount
+  assetId: BigInt!
   accumulatedInterests: BigInt!
   accumulatedDebts: BigInt!
   accumulatedPremiumSupply: BigInt!
