@@ -246,6 +246,7 @@ export function ensureInterestGrowthTx(
 
   if (entity == null) {
     entity = new InterestGrowthTx(id)
+    entity.assetId = assetId
     entity.accumulatedInterests = BigInt.zero()
     entity.accumulatedDebts = BigInt.zero()
     entity.accumulatedPremiumSupply = BigInt.zero()
