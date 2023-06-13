@@ -1,9 +1,11 @@
 import { BigInt, Bytes } from '@graphprotocol/graph-ts'
 import { LendingUserHistoryItem } from '../generated/schema'
+import { toPairId } from './helper'
 
 export function createLendingDepositHistory(
   contractAddress: Bytes,
   assetId: BigInt,
+  isStable: boolean,
   account: Bytes,
   txHash: string,
   logIndex: BigInt,
@@ -13,6 +15,7 @@ export function createLendingDepositHistory(
   createLendingHistory(
     contractAddress,
     assetId,
+    isStable,
     account,
     'DEPOSIT',
     txHash,
@@ -25,6 +28,7 @@ export function createLendingDepositHistory(
 export function createLendingWithdrawHistory(
   contractAddress: Bytes,
   assetId: BigInt,
+  isStable: boolean,
   account: Bytes,
   txHash: string,
   logIndex: BigInt,
@@ -34,6 +38,7 @@ export function createLendingWithdrawHistory(
   createLendingHistory(
     contractAddress,
     assetId,
+    isStable,
     account,
     'WITHDRAW',
     txHash,
@@ -45,7 +50,8 @@ export function createLendingWithdrawHistory(
 
 export function createLendingHistory(
   contractAddress: Bytes,
-  assetId: BigInt,
+  pairId: BigInt,
+  isStable: boolean,
   account: Bytes,
   action: string,
   txHash: string,
@@ -58,7 +64,8 @@ export function createLendingHistory(
   )
 
   historyItem.address = contractAddress
-  historyItem.assetId = assetId
+  historyItem.pairId = pairId
+  historyItem.isStable = isStable
   historyItem.account = account
   historyItem.action = action
   historyItem.assetAmount = assetAmount

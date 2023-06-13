@@ -1,24 +1,90 @@
 import { BigInt, Bytes } from '@graphprotocol/graph-ts'
 
 import {
-  AccumulatedProtocolFeeDaily,
-  AssetEntity,
-  InterestDaily,
-  InterestGrowthTx,
-  LPRevenueDaily,
+  ControllerEntity,
+  FeeDaily,
+  FeeEntity,
   OpenInterestDaily,
   OpenInterestTotal,
   OpenPositionEntity,
+  PairEntity,
   StrategyUserPosition,
-  TotalTokensEntity,
+  TokenEntity,
   TradeHistoryItem,
   UniFeeGrowthHourly
 } from '../generated/schema'
-import { InterestGrowthUpdated } from '../generated/Controller/Controller'
+import { Rebalanced } from '../generated/Controller/Controller'
+
+
+export function ensureControllerEntity(
+  controllerAddress: Bytes,
+  eventTime: BigInt
+): ControllerEntity {
+  const id = controllerAddress.toHex()
+  let entity = ControllerEntity.load(id)
+
+  if (entity == null) {
+    entity = new ControllerEntity(id)
+    entity.contractAddress = controllerAddress
+    entity.createdAt = eventTime
+  }
+
+  entity.updatedAt = eventTime
+
+  return entity
+}
+
+export function ensurePairEntity(
+  controllerAddress: Bytes,
+  pairId: BigInt,
+  eventTime: BigInt
+): PairEntity {
+  const id = toPairId(controllerAddress, pairId)
+  let entity = PairEntity.load(id)
+
+  if (entity == null) {
+    entity = new PairEntity(id)
+    entity.controller = controllerAddress.toHex()
+    entity.pairId = pairId
+    entity.totalSupply = BigInt.zero()
+    entity.totalBorrow = BigInt.zero()
+    entity.sqrtTotalSupply = BigInt.zero()
+    entity.sqrtTotalBorrow = BigInt.zero()
+    entity.createdAt = eventTime
+  }
+
+  entity.updatedAt = eventTime
+
+  return entity
+}
+
+
+export function ensureTokenEntity(
+  address: Bytes,
+  pairId: BigInt,
+  eventTime: BigInt
+): TokenEntity {
+  const id = address.toHex()
+  let entity = TokenEntity.load(id)
+
+  if (entity == null) {
+    entity = new TokenEntity(id)
+    entity.address = address
+    entity.pair = toPairId(address, pairId)
+    entity.decimals = BigInt.zero()
+    entity.symbol = Bytes.empty()
+    entity.createdAt = eventTime
+  }
+
+  entity.updatedAt = eventTime
+
+  return entity
+}
+
 
 export function ensureOpenPosition(
   controllerAddress: Bytes,
-  assetId: BigInt,
+  pairId: BigInt,
   vaultId: BigInt,
   eventTime: BigInt
 ): OpenPositionEntity {
@@ -27,13 +93,13 @@ export function ensureOpenPosition(
     '-' +
     vaultId.toString() +
     '-' +
-    assetId.toString()
+    pairId.toString()
 
   let openPosition = OpenPositionEntity.load(id)
 
   if (openPosition == null) {
     openPosition = new OpenPositionEntity(id)
-    openPosition.assetId = assetId
+    openPosition.pair = toPairId(controllerAddress, pairId)
     openPosition.createdAt = eventTime
     openPosition.vault = toVaultId(controllerAddress, vaultId)
     openPosition.tradeAmount = BigInt.zero()
@@ -191,141 +257,73 @@ function toISODateString(timestamp: BigInt): string {
   return date.substring(0, date.indexOf('T'))
 }
 
-export function ensureLPRevenueDaily(
-  address: Bytes,
-  eventTime: BigInt
-): LPRevenueDaily {
-  const id = address.toHex() + '-' + toISODateString(eventTime)
-  let entity = LPRevenueDaily.load(id)
-
-  if (entity == null) {
-    entity = new LPRevenueDaily(id)
-    entity.fee0 = BigInt.fromI32(0)
-    entity.fee1 = BigInt.fromI32(0)
-    entity.premiumBorrow = BigInt.fromI32(0)
-    entity.premiumSupply = BigInt.fromI32(0)
-    entity.supplyInterest0 = BigInt.fromI32(0)
-    entity.supplyInterest1 = BigInt.fromI32(0)
-    entity.borrowInterest0 = BigInt.fromI32(0)
-    entity.borrowInterest1 = BigInt.fromI32(0)
-    entity.createdAt = eventTime
-    entity.updatedAt = eventTime
-  }
-
-  return entity
-}
-
-export function ensureTotalTokensEntity(
-  address: Bytes,
-  assetId: BigInt,
-  eventTime: BigInt
-): TotalTokensEntity {
-  const id = `total-${address.toHex()}-${assetId.toString()}`
-  let entity = TotalTokensEntity.load(id)
-
-  if (entity == null) {
-    entity = new TotalTokensEntity(id)
-    entity.growthCount = BigInt.zero()
-    entity.createdAt = eventTime
-    entity.updatedAt = eventTime
-  }
-
-  return entity
-}
-
-export function ensureInterestGrowthTx(
-  event: InterestGrowthUpdated,
-  count: BigInt,
-): InterestGrowthTx {
-  const address = event.address
-  const assetId = event.params.assetId
-  const eventTime = event.block.timestamp
-
-  const id = `${address.toHex()}-${assetId.toString()}-${count.toString()}`
-  let entity = InterestGrowthTx.load(id)
-
-  if (entity == null) {
-    entity = new InterestGrowthTx(id)
-    entity.assetId = assetId
-    entity.accumulatedInterests = BigInt.zero()
-    entity.accumulatedDebts = BigInt.zero()
-    entity.accumulatedPremiumSupply = BigInt.zero()
-    entity.accumulatedPremiumBorrow = BigInt.zero()
-    entity.accumulatedFee0 = BigInt.zero()
-    entity.accumulatedFee1 = BigInt.zero()
-    entity.assetGrowth = event.params.assetGrowth
-    entity.debtGrowth = event.params.debtGrowth
-    entity.supplyPremiumGrowth = event.params.supplyPremiumGrowth
-    entity.borrowPremiumGrowth = event.params.borrowPremiumGrowth
-    entity.fee0Growth = event.params.fee0Growth
-    entity.fee1Growth = event.params.fee1Growth
-    entity.createdAt = eventTime
-  }
-
-  return entity
-}
-
-export function ensureAccumulatedProtocolFeeDaily(
-  address: Bytes,
-  eventTime: BigInt
-): AccumulatedProtocolFeeDaily {
-  const id = address.toHex() + '-' + toISODateString(eventTime)
-  let entity = AccumulatedProtocolFeeDaily.load(id)
-
-  if (entity == null) {
-    entity = new AccumulatedProtocolFeeDaily(id)
-    entity.accumulatedProtocolFee0 = BigInt.fromI32(0)
-    entity.accumulatedProtocolFee1 = BigInt.fromI32(0)
-    entity.withdrawnProtocolFee0 = BigInt.fromI32(0)
-    entity.withdrawnProtocolFee1 = BigInt.fromI32(0)
-    entity.createdAt = eventTime
-    entity.updatedAt = eventTime
-  }
-
-  return entity
-}
-
-export function ensureInterestDaily(
-  address: Bytes,
-  assetId: BigInt,
-  eventTime: BigInt
-): InterestDaily {
-  const id = `${address.toHex()}-${assetId.toString()}-${toISODateString(
-    eventTime
-  )}`
-
-  let entity = InterestDaily.load(id)
-
-  if (entity == null) {
-    entity = new InterestDaily(id)
-    entity.assetId = assetId
-    entity.assetGrowth = BigInt.fromI32(0)
-    entity.debtGrowth = BigInt.fromI32(0)
-    entity.createdAt = eventTime
-    entity.updatedAt = eventTime
-  }
-
-  return entity
-}
-
-export function ensureAssetEntity(
+export function ensureFeeEntity(
   controllerAddress: Bytes,
-  assetId: BigInt,
+  pairId: BigInt,
+  txHash: Bytes,
   eventTime: BigInt
-): AssetEntity {
-  const id = toAssetId(controllerAddress, assetId)
-  let entity = AssetEntity.load(id)
+): FeeEntity {
+  const id = controllerAddress.toHex() + '-' + pairId.toString() + '-' + txHash.toHex()
+  let entity = FeeEntity.load(id)
 
   if (entity == null) {
-    entity = new AssetEntity(id)
-    entity.contractAddress = controllerAddress
-    entity.assetId = assetId
-    entity.totalSupply = BigInt.zero()
-    entity.totalBorrow = BigInt.zero()
-    entity.sqrtTotalSupply = BigInt.zero()
-    entity.sqrtTotalBorrow = BigInt.zero()
+    entity = new FeeEntity(id)
+    entity.supplyStableFee = BigInt.fromI32(0)
+    entity.supplyUnderlyingFee = BigInt.fromI32(0)
+    entity.supplySqrtFee0 = BigInt.fromI32(0)
+    entity.supplySqrtFee1 = BigInt.fromI32(0)
+    entity.borrowStableFee = BigInt.fromI32(0)
+    entity.borrowUnderlyingFee = BigInt.fromI32(0)
+    entity.borrowSqrtFee0 = BigInt.fromI32(0)
+    entity.borrowSqrtFee1 = BigInt.fromI32(0)
+
+    entity.supplyStableInterest = BigInt.fromI32(0)
+    entity.supplyUnderlyingInterest = BigInt.fromI32(0)
+    entity.supplySqrtInterest0 = BigInt.fromI32(0)
+    entity.supplySqrtInterest1 = BigInt.fromI32(0)
+    entity.borrowStableInterest = BigInt.fromI32(0)
+    entity.borrowUnderlyingInterest = BigInt.fromI32(0)
+    entity.borrowSqrtInterest0 = BigInt.fromI32(0)
+    entity.borrowSqrtInterest1 = BigInt.fromI32(0)
+
+    entity.supplyStableInterestGrowth = BigInt.fromI32(0)
+    entity.supplyUnderlyingInterestGrowth = BigInt.fromI32(0)
+    entity.supplySqrtInterest0Growth = BigInt.fromI32(0)
+    entity.supplySqrtInterest1Growth = BigInt.fromI32(0)
+    entity.borrowStableInterestGrowth = BigInt.fromI32(0)
+    entity.borrowUnderlyingInterestGrowth = BigInt.fromI32(0)
+    entity.borrowSqrtInterest0Growth = BigInt.fromI32(0)
+    entity.borrowSqrtInterest1Growth = BigInt.fromI32(0)
+
     entity.createdAt = eventTime
   }
+
+  return entity
+}
+
+export function ensureFeeDaily(
+  controllerAddress: Bytes,
+  pairId: BigInt,
+  eventTime: BigInt
+): FeeDaily {
+  const id = controllerAddress.toHex() + '-' + pairId.toString() + '-' + toISODateString(eventTime)
+  let entity = FeeDaily.load(id)
+
+  if (entity == null) {
+    entity = new FeeDaily(id)
+    entity.supplyStableFee = BigInt.fromI32(0)
+    entity.supplyUnderlyingFee = BigInt.fromI32(0)
+    entity.supplySqrtFee0 = BigInt.fromI32(0)
+    entity.supplySqrtFee1 = BigInt.fromI32(0)
+    entity.borrowStableFee = BigInt.fromI32(0)
+    entity.borrowUnderlyingFee = BigInt.fromI32(0)
+    entity.borrowSqrtFee0 = BigInt.fromI32(0)
+    entity.borrowSqrtFee1 = BigInt.fromI32(0)
+
+    entity.createdAt = eventTime
+  }
+
+  entity.updatedAt = eventTime
 
   return entity
 }
@@ -352,13 +350,22 @@ export function ensureStrategyUserPosition(
   return entity
 }
 
-export function toAssetId(address: Bytes, assetId: BigInt): string {
-  return address.toHex() + '-' + assetId.toString()
+export function toPairId(address: Bytes, pairId: BigInt): string {
+  return address.toHex() + '-' + pairId.toString()
 }
 
 export function toVaultId(address: Bytes, vaultId: BigInt): string {
   return address.toHex() + '-' + vaultId.toString()
 }
+
+export function toRebalanceId(event: Rebalanced): string {
+  return event.transaction.hash.toHex() +
+    '-' +
+    event.transactionLogIndex.toString() +
+    '-' +
+    event.params.pairId.toString()
+}
+
 
 export function toStrategyUserPositionId(
   address: Bytes,

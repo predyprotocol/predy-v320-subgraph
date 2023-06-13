@@ -27,9 +27,9 @@ dataSources:
           handler: handlePairAdded
         - event: VaultCreated(uint256,address,bool)
           handler: handleVaultCreated
-        - event: TokenSupplied(address,uint256,uint256)
+        - event: TokenSupplied(address,uint256,bool,uint256)
           handler: handleTokenSupplied
-        - event: TokenWithdrawn(address,uint256,uint256)
+        - event: TokenWithdrawn(address,uint256,bool,uint256)
           handler: handleTokenWithdrawn
         - event: MarginUpdated(uint256,int256)
           handler: handleMarginUpdated
@@ -41,14 +41,18 @@ dataSources:
           handler: handlePositionUpdated
         - event: PositionLiquidated(uint256,uint256,int256,int256,(int256,int256,int256,int256,int256,int256),int256)
           handler: handlePositionLiquidated
-        - event: VaultLiquidated(uint256,uint256,uint256,address,uint256)
+        - event: VaultLiquidated(uint256,uint256,uint256,address,int256)
           handler: handleVaultLiquidated
-        - event: FeeCollected(uint256,uint256,int256)
-          handler: handleFeeCollected
+        - event: ScaledAssetPositionUpdated(uint256,bool,int256,int256)
+          handler: handleScaledAssetPositionUpdated
+        - event: SqrtPositionUpdated(uint256,int256,int256)
+          handler: handleSqrtPositionUpdated
         - event: Rebalanced(uint256,int24,int24,int256)
           handler: handleRebalanced
-        - event: InterestGrowthUpdated(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+        - event: InterestGrowthUpdated(uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256,uint256,uint256),uint256,uint256)
           handler: handleInterestGrowthUpdated
+        - event: PremiumGrowthUpdated(uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handlePremiumGrowthUpdated
       file: ./src/Controller.ts
   - kind: ethereum/contract
     name: WethGammaShortStrategy

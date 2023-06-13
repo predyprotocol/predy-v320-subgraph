@@ -1,6 +1,5 @@
 import { BigInt, Bytes } from '@graphprotocol/graph-ts'
 import {
-  FeeCollected,
   InterestGrowthUpdated,
   IsolatedVaultClosed,
   IsolatedVaultOpened,
@@ -10,7 +9,10 @@ import {
   PositionLiquidated,
   PositionUpdated,
   PositionUpdatedPayoffStruct,
+  PremiumGrowthUpdated,
   Rebalanced,
+  ScaledAssetPositionUpdated,
+  SqrtPositionUpdated,
   TokenSupplied,
   TokenWithdrawn,
   VaultCreated,
@@ -25,21 +27,15 @@ import {
   createFeeHistory,
   createLiquidationHistory,
   createMarginHistory,
-  ensureAssetEntity,
-  ensureInterestGrowthTx,
+  ensureControllerEntity,
+  ensureFeeDaily,
+  ensureFeeEntity,
   ensureOpenPosition,
-  ensureTotalTokensEntity,
-  toAssetId,
+  ensurePairEntity,
+  toPairId,
+  toRebalanceId,
   toVaultId
 } from './helper'
-import {
-  updateFeeRevenue,
-  updateInterestDaily,
-  updatePremiumRevenue,
-  updateProtocolRevenue,
-  updateTokenRevenue
-} from './revenue'
-import { controllerContract } from './contracts'
 import { ONE } from './constants'
 import {
   createLendingDepositHistory,
@@ -50,22 +46,24 @@ import { updateOpenInterest } from './OpenInterest'
 export function handleOperatorUpdated(event: OperatorUpdated): void { }
 
 export function handlePairAdded(event: PairAdded): void {
-  const asset = ensureAssetEntity(
+  const controller = ensureControllerEntity(
     event.address,
-    event.params.assetId,
     event.block.timestamp
   )
 
-  asset.assetId = event.params.assetId
-  asset.uniswapPool = event.params._uniswapPool
-  asset.totalSupply = BigInt.zero()
-  asset.totalBorrow = BigInt.zero()
-  asset.sqrtTotalSupply = BigInt.zero()
-  asset.sqrtTotalBorrow = BigInt.zero()
-  asset.createdAt = event.block.timestamp
-  asset.updatedAt = event.block.timestamp
+  controller.save()
 
-  asset.save()
+  const pair = ensurePairEntity(
+    event.address,
+    event.params.pairId,
+    event.block.timestamp
+  )
+
+  pair.controller = controller.id
+  pair.pairId = event.params.pairId
+  pair.uniswapPool = event.params._uniswapPool
+
+  pair.save()
 }
 
 export function handleVaultCreated(event: VaultCreated): void {
@@ -82,20 +80,14 @@ export function handleVaultCreated(event: VaultCreated): void {
 }
 
 export function handleTokenSupplied(event: TokenSupplied): void {
-  const assetId = event.params.assetId
+  const pairId = event.params.pairId
   const timestamp = event.block.timestamp
   const suppliedAmount = event.params.suppliedAmount
 
-  const asset = ensureAssetEntity(event.address, assetId, timestamp)
-
-  asset.totalSupply = asset.totalSupply.plus(suppliedAmount)
-  asset.updatedAt = timestamp
-
-  asset.save()
-
   createLendingDepositHistory(
     event.address,
-    assetId,
+    pairId,
+    event.params.isStable,
     event.transaction.from,
     event.transaction.hash.toHex(),
     event.logIndex,
@@ -105,20 +97,14 @@ export function handleTokenSupplied(event: TokenSupplied): void {
 }
 
 export function handleTokenWithdrawn(event: TokenWithdrawn): void {
-  const assetId = event.params.assetId
+  const pairId = event.params.pairId
   const timestamp = event.block.timestamp
   const finalWithdrawnAmount = event.params.finalWithdrawnAmount
 
-  const asset = ensureAssetEntity(event.address, assetId, timestamp)
-
-  asset.totalSupply = asset.totalSupply.minus(finalWithdrawnAmount)
-  asset.updatedAt = timestamp
-
-  asset.save()
-
   createLendingWithdrawHistory(
     event.address,
-    assetId,
+    pairId,
+    event.params.isStable,
     event.transaction.from,
     event.transaction.hash.toHex(),
     event.logIndex,
@@ -256,7 +242,7 @@ export function handlePositionUpdated(event: PositionUpdated): void {
     event.transaction.hash,
     event.logIndex,
     event.params.vaultId,
-    event.params.assetId,
+    event.params.pairId,
     event.params.tradeAmount,
     event.params.tradeSqrtAmount,
     event.params.payoff,
@@ -277,7 +263,7 @@ export function handlePositionLiquidated(event: PositionLiquidated): void {
     event.transaction.hash,
     event.logIndex,
     event.params.vaultId,
-    event.params.assetId,
+    event.params.pairId,
     event.params.tradeAmount,
     event.params.tradeSqrtAmount,
     payoff,
@@ -291,7 +277,7 @@ function updatePosition(
   txHash: Bytes,
   logIndex: BigInt,
   vaultId: BigInt,
-  assetId: BigInt,
+  pairId: BigInt,
   tradeAmount: BigInt,
   tradeSqrtAmount: BigInt,
   payoff: PositionUpdatedPayoffStruct,
@@ -300,7 +286,7 @@ function updatePosition(
 ): void {
   const openPosition = ensureOpenPosition(
     controllerAddress,
-    assetId,
+    pairId,
     vaultId,
     timestamp
   )
@@ -308,7 +294,7 @@ function updatePosition(
   // Update OI
   updateOpenInterest(
     controllerAddress,
-    assetId,
+    pairId,
     timestamp,
     openPosition.tradeAmount,
     tradeAmount,
@@ -373,7 +359,7 @@ function updatePosition(
     )
 
     historyItem.vault = toVaultId(controllerAddress, vaultId)
-    historyItem.assetId = assetId
+    historyItem.pair = toPairId(controllerAddress, pairId)
     historyItem.action = 'POSITION'
     historyItem.product = 'PERP'
     historyItem.size = tradeAmount
@@ -396,7 +382,7 @@ function updatePosition(
     )
 
     historyItem.vault = toVaultId(controllerAddress, vaultId)
-    historyItem.assetId = assetId
+    historyItem.pair = toPairId(controllerAddress, pairId)
     historyItem.action = 'POSITION'
     historyItem.product = 'SQRT'
     historyItem.size = tradeSqrtAmount
@@ -409,43 +395,12 @@ function updatePosition(
   }
 }
 
-export function handleFeeCollected(event: FeeCollected): void {
-  const openPosition = ensureOpenPosition(
-    event.address,
-    event.params.assetId,
-    event.params.vaultId,
-    event.block.timestamp
-  )
-
-  openPosition.feeAmount = openPosition.feeAmount.plus(
-    event.params.feeCollected
-  )
-
-  openPosition.save()
-
-  if (!event.params.feeCollected.equals(BigInt.zero())) {
-    createFeeHistory(
-      event.address,
-      event.transaction.hash.toHex(),
-      event.logIndex,
-      event.params.vaultId,
-      event.params.feeCollected,
-      event.block.timestamp
-    )
-  }
-}
-
 export function handleRebalanced(event: Rebalanced): void {
-  const id =
-    event.transaction.hash.toHex() +
-    '-' +
-    event.transactionLogIndex.toString() +
-    '-' +
-    event.params.assetId.toString()
+  const id = toRebalanceId(event)
 
   const item = new RebalanceHistoryItem(id)
 
-  item.asset = toAssetId(event.address, event.params.assetId)
+  item.pair = toPairId(event.address, event.params.pairId)
   item.tickLower = BigInt.fromI32(event.params.tickLower)
   item.tickUpper = BigInt.fromI32(event.params.tickUpper)
   item.profit = event.params.profit
@@ -454,112 +409,116 @@ export function handleRebalanced(event: Rebalanced): void {
   item.save()
 }
 
+export function handleScaledAssetPositionUpdated(
+  event: ScaledAssetPositionUpdated
+): void {
+}
+
+export function handleSqrtPositionUpdated(
+  event: SqrtPositionUpdated
+): void {
+}
+
 export function handleInterestGrowthUpdated(
   event: InterestGrowthUpdated
 ): void {
-  const assetId = event.params.assetId
+  const pairId = event.params.pairId
+  const timestamp = event.block.timestamp
+  const stableStatus = event.params.stableStatus
+  const underlyingStatus = event.params.underlyingStatus
+
+  const feeEntity = ensureFeeEntity(
+    event.address,
+    pairId,
+    event.transaction.hash,
+    timestamp
+  )
+
+  const totalStableSupply = stableStatus.assetScaler.times(
+    stableStatus.totalCompoundDeposited
+  ).plus(stableStatus.totalNormalDeposited)
+  const totalStableBorrow = stableStatus.totalNormalBorrowed
+
+  feeEntity.supplyStableInterest = event.params.interestRateStable.times(totalStableBorrow).div(totalStableSupply)
+  feeEntity.borrowStableInterest = event.params.interestRateStable
+  feeEntity.supplyStableFee = feeEntity.supplyStableInterest.times(totalStableSupply).div(ONE)
+  feeEntity.supplyStableInterestGrowth = feeEntity.supplyStableInterestGrowth.plus(feeEntity.supplyStableInterest)
+  feeEntity.borrowStableFee = feeEntity.borrowStableInterest.times(totalStableBorrow).div(ONE)
+  feeEntity.borrowStableInterestGrowth = feeEntity.borrowStableInterestGrowth.plus(feeEntity.borrowStableInterest)
+
+  const totalUnderlyingSupply = underlyingStatus.assetScaler.times(
+    underlyingStatus.totalCompoundDeposited
+  ).plus(underlyingStatus.totalNormalDeposited)
+  const totalUnderlyingBorrow = underlyingStatus.totalNormalBorrowed
+
+  feeEntity.supplyUnderlyingInterest = event.params.interestRateUnderlying.times(totalUnderlyingBorrow).div(totalUnderlyingSupply)
+  feeEntity.borrowUnderlyingInterest = event.params.interestRateUnderlying
+  feeEntity.supplyUnderlyingFee = feeEntity.supplyUnderlyingInterest.times(totalUnderlyingSupply).div(ONE)
+  feeEntity.supplyUnderlyingInterestGrowth = feeEntity.supplyUnderlyingInterestGrowth.plus(feeEntity.supplyUnderlyingInterest)
+  feeEntity.borrowUnderlyingFee = feeEntity.borrowUnderlyingInterest.times(totalUnderlyingBorrow).div(ONE)
+  feeEntity.borrowUnderlyingInterestGrowth = feeEntity.borrowUnderlyingInterestGrowth.plus(feeEntity.borrowUnderlyingInterest)
+
+  feeEntity.save()
+
+  const feeDaily = ensureFeeDaily(
+    event.address,
+    pairId,
+    timestamp
+  )
+
+  feeDaily.supplyStableFee = feeDaily.supplyStableFee.plus(feeEntity.supplyStableFee)
+  feeDaily.borrowStableFee = feeDaily.borrowStableFee.plus(feeEntity.borrowStableFee)
+  feeDaily.supplyUnderlyingFee = feeDaily.supplyUnderlyingFee.plus(feeEntity.supplyUnderlyingFee)
+  feeDaily.borrowUnderlyingFee = feeDaily.borrowUnderlyingFee.plus(feeEntity.borrowUnderlyingFee)
+
+  feeDaily.save()
+}
+
+export function handlePremiumGrowthUpdated(
+  event: PremiumGrowthUpdated
+): void {
+  const pairId = event.params.pairId
   const timestamp = event.block.timestamp
 
-  const totalTokens = ensureTotalTokensEntity(event.address, assetId, timestamp)
-
-  const previousAsset = ensureAssetEntity(event.address, assetId, timestamp)
-
-  // Load previous InterestGrowthTx Entity, it's needed for calculating accumulated interests and debts
-  const previousEntity = ensureInterestGrowthTx(
-    event,
-    totalTokens.growthCount,
-  )
-  totalTokens.growthCount = totalTokens.growthCount.plus(BigInt.fromU32(1))
-  totalTokens.save()
-
-  // Create InterestGrowthTx Entity
-  const entity = ensureInterestGrowthTx(
-    event,
-    totalTokens.growthCount,
+  const feeEntity = ensureFeeEntity(
+    event.address,
+    pairId,
+    event.transaction.hash,
+    timestamp
   )
 
-  entity.accumulatedInterests = previousEntity.accumulatedInterests.plus(
-    event.params.assetGrowth
-      .minus(previousEntity.assetGrowth)
-      .times(previousAsset.totalSupply)
+  const totalSupply = event.params.totalAmount
+  const totalBorrow = event.params.borrowAmount
+  const spread = event.params.spread
+
+  feeEntity.supplySqrtInterest0 = event.params.fee0Growth.times(totalSupply.plus(totalBorrow.times(spread).div(BigInt.fromU32(1000)))).div(totalSupply)
+  feeEntity.supplySqrtInterest1 = event.params.fee1Growth.times(totalSupply.plus(totalBorrow.times(spread).div(BigInt.fromU32(1000)))).div(totalSupply)
+
+  feeEntity.borrowSqrtInterest0 = event.params.fee0Growth.times(spread.plus(BigInt.fromU32(1000))).div(BigInt.fromU32(1000))
+  feeEntity.borrowSqrtInterest1 = event.params.fee1Growth.times(spread.plus(BigInt.fromU32(1000))).div(BigInt.fromU32(1000))
+
+  feeEntity.supplySqrtFee0 = feeEntity.supplySqrtInterest0.times(totalSupply).div(ONE)
+  feeEntity.supplySqrtFee1 = feeEntity.supplySqrtInterest1.times(totalSupply).div(ONE)
+  feeEntity.borrowSqrtFee0 = feeEntity.borrowSqrtInterest0.times(totalBorrow).div(ONE)
+  feeEntity.borrowSqrtFee1 = feeEntity.borrowSqrtInterest1.times(totalBorrow).div(ONE)
+
+  feeEntity.supplySqrtInterest0Growth = feeEntity.supplySqrtInterest0Growth.plus(feeEntity.supplySqrtInterest0)
+  feeEntity.supplySqrtInterest1Growth = feeEntity.supplySqrtInterest1Growth.plus(feeEntity.supplySqrtInterest1)
+  feeEntity.borrowSqrtInterest0Growth = feeEntity.borrowSqrtInterest0Growth.plus(feeEntity.borrowSqrtInterest0)
+  feeEntity.borrowSqrtInterest1Growth = feeEntity.borrowSqrtInterest1Growth.plus(feeEntity.borrowSqrtInterest1)
+
+  feeEntity.save()
+
+  const feeDaily = ensureFeeDaily(
+    event.address,
+    pairId,
+    timestamp
   )
-  entity.accumulatedDebts = previousEntity.accumulatedDebts.plus(
-    event.params.debtGrowth
-      .minus(previousEntity.debtGrowth)
-      .times(previousAsset.totalBorrow)
-  )
 
-  if (assetId.notEqual(BigInt.fromI32(1))) {
-    entity.accumulatedPremiumSupply =
-      previousEntity.accumulatedPremiumSupply.plus(
-        event.params.supplyPremiumGrowth
-          .minus(previousEntity.supplyPremiumGrowth)
-          .times(previousAsset.sqrtTotalSupply)
-      )
+  feeDaily.supplySqrtFee0 = feeDaily.supplySqrtFee0.plus(feeEntity.supplySqrtFee0)
+  feeDaily.supplySqrtFee1 = feeDaily.supplySqrtFee1.plus(feeEntity.supplySqrtFee1)
+  feeDaily.borrowSqrtFee0 = feeDaily.borrowSqrtFee0.plus(feeEntity.borrowSqrtFee0)
+  feeDaily.borrowSqrtFee1 = feeDaily.borrowSqrtFee1.plus(feeEntity.borrowSqrtFee1)
 
-    entity.accumulatedPremiumBorrow =
-      previousEntity.accumulatedPremiumBorrow.plus(
-        event.params.borrowPremiumGrowth
-          .minus(previousEntity.borrowPremiumGrowth)
-          .times(previousAsset.sqrtTotalBorrow)
-      )
-
-    entity.accumulatedFee0 = previousEntity.accumulatedFee0.plus(
-      event.params.fee0Growth
-        .minus(previousEntity.fee0Growth)
-        .times(previousAsset.sqrtTotalSupply)
-    )
-
-    entity.accumulatedFee1 = previousEntity.accumulatedFee1.plus(
-      event.params.fee1Growth
-        .minus(previousEntity.fee1Growth)
-        .times(previousAsset.sqrtTotalSupply)
-    )
-  }
-  entity.save()
-
-  updateInterestDaily(event)
-  updateProtocolRevenue(event)
-
-  // Update AssetEntity, it will be used when this handler be called next time.
-  const currentAsset = controllerContract.getAsset(assetId)
-  const tokenStatus = currentAsset.tokenStatus
-
-  // Update AssetEntity
-  const asset = previousAsset
-  asset.totalSupply = tokenStatus.totalCompoundDeposited
-    .times(tokenStatus.assetScaler)
-    .div(ONE)
-    .plus(tokenStatus.totalNormalDeposited)
-  asset.totalBorrow = tokenStatus.totalCompoundBorrowed
-    .times(tokenStatus.debtScaler)
-    .div(ONE)
-    .plus(tokenStatus.totalNormalBorrowed)
-
-  if (assetId.notEqual(BigInt.fromI32(1))) {
-    const sqrtAssetStatus = currentAsset.sqrtAssetStatus
-    asset.sqrtTotalSupply = sqrtAssetStatus.totalAmount
-    asset.sqrtTotalBorrow = sqrtAssetStatus.borrowedAmount
-  }
-
-  asset.updatedAt = timestamp
-  asset.save()
-
-  if (
-    totalTokens.growthCount.gt(BigInt.fromU32(1)) &&
-    previousAsset.totalSupply.gt(BigInt.zero()) &&
-    previousAsset.totalBorrow.gt(BigInt.zero())
-  ) {
-    updateTokenRevenue(event, totalTokens)
-  }
-
-  if (
-    assetId.notEqual(BigInt.fromI32(1)) &&
-    previousAsset.sqrtTotalSupply.gt(BigInt.zero()) &&
-    previousAsset.sqrtTotalBorrow.gt(BigInt.zero())
-  ) {
-    updatePremiumRevenue(event, totalTokens)
-    updateFeeRevenue(event, totalTokens)
-  }
-
+  feeDaily.save()
 }

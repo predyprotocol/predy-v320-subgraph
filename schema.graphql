@@ -1,13 +1,33 @@
-type AssetEntity @entity {
-  id: ID! # controllerAddress-assetId
+type ControllerEntity @entity {
+  id: ID! # controllerAddress
   contractAddress: Bytes # address
-  assetId: BigInt!
-  uniswapPool: Bytes # address
+  pairs: [PairEntity!]! @derivedFrom(field: "controller")
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
+
+type PairEntity @entity {
+  id: ID! # controllerAddress-assetId
+  controller: ControllerEntity
+  pairId: BigInt!
+  uniswapPool: Bytes! # address
+  token0: TokenEntity
+  token1: TokenEntity
   totalSupply: BigInt! # uint256
   totalBorrow: BigInt! # uint256
   sqrtTotalSupply: BigInt!
   sqrtTotalBorrow: BigInt!
-  rebalanceHistory: [RebalanceHistoryItem!]! @derivedFrom(field: "asset")
+  rebalanceHistory: [RebalanceHistoryItem!]! @derivedFrom(field: "pair")
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
+
+type TokenEntity @entity {
+  id: ID! # controllerAddress-assetId
+  address: Bytes # address
+  pair: PairEntity!
+  symbol: Bytes!
+  decimals: BigInt!
   createdAt: BigInt!
   updatedAt: BigInt!
 }
@@ -27,7 +47,7 @@ type VaultEntity @entity {
 type OpenPositionEntity @entity {
   id: ID! # vaultId-assetId
   vault: VaultEntity!
-  assetId: BigInt!
+  pair: PairEntity!
   tradeAmount: BigInt! # int256
   sqrtTradeAmount: BigInt! # int256
   entryValue: BigInt! # int256
@@ -56,7 +76,7 @@ enum Product {
 type TradeHistoryItem @entity {
   id: ID! # txHash
   vault: VaultEntity!
-  assetId: BigInt
+  pair: PairEntity
   action: Action!
   product: Product
   size: BigInt
@@ -74,7 +94,8 @@ enum LendingAction {
 type LendingUserHistoryItem @entity {
   id: ID!
   address: Bytes!
-  assetId: BigInt!
+  pairId: BigInt!
+  isStable: Boolean!
   account: Bytes! # address
   action: LendingAction!
   assetAmount: BigInt!
@@ -109,14 +130,82 @@ type StrategyUserHistoryItem @entity {
   createdAt: BigInt!
 }
 
-type UniFeeGrowthHourly @entity {
-  id: ID! # address-yyyy-MM-dd
-  address: Bytes!
-  feeGrowthGlobal0X128: BigInt!
-  feeGrowthGlobal1X128: BigInt!
+type RebalanceHistoryItem @entity {
+  id: ID!
+  pair: PairEntity!
+  tickLower: BigInt!
+  tickUpper: BigInt!
+  profit: BigInt!
+  createdAt: BigInt!
+}
+
+type FeeEntity @entity {
+  id: ID! # address-pairId-txhash
+  pair: PairEntity!
+  supplyStableFee: BigInt!
+  supplyUnderlyingFee: BigInt!
+  supplySqrtFee0: BigInt!
+  supplySqrtFee1: BigInt!
+  borrowStableFee: BigInt!
+  borrowUnderlyingFee: BigInt!
+  borrowSqrtFee0: BigInt!
+  borrowSqrtFee1: BigInt!
+  supplyStableInterest: BigInt!
+  supplyUnderlyingInterest: BigInt!
+  supplySqrtInterest0: BigInt!
+  supplySqrtInterest1: BigInt!
+  borrowStableInterest: BigInt!
+  borrowUnderlyingInterest: BigInt!
+  borrowSqrtInterest0: BigInt!
+  borrowSqrtInterest1: BigInt!
+  supplyStableInterestGrowth: BigInt!
+  supplyUnderlyingInterestGrowth: BigInt!
+  supplySqrtInterest0Growth: BigInt!
+  supplySqrtInterest1Growth: BigInt!
+  borrowStableInterestGrowth: BigInt!
+  borrowUnderlyingInterestGrowth: BigInt!
+  borrowSqrtInterest0Growth: BigInt!
+  borrowSqrtInterest1Growth: BigInt!
+  createdAt: BigInt!
+}
+
+type FeeDaily @entity {
+  id: ID! # address-pairId-yyyy-MM-dd
+  supplyStableFee: BigInt!
+  supplyUnderlyingFee: BigInt!
+  borrowStableFee: BigInt!
+  borrowUnderlyingFee: BigInt!
+  supplySqrtFee0: BigInt!
+  supplySqrtFee1: BigInt!
+  borrowSqrtFee0: BigInt!
+  borrowSqrtFee1: BigInt!
   createdAt: BigInt!
   updatedAt: BigInt!
 }
+
+type OpenInterestDaily @entity {
+  id: ID! # address-assetId-yyyy-MM-dd
+  assetId: BigInt!
+  longPerp: BigInt!
+  shortPerp: BigInt!
+  longSquart: BigInt!
+  shortSquart: BigInt!
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
+
+type OpenInterestTotal @entity {
+  id: ID! # address-assetId
+  assetId: BigInt!
+  longPerp: BigInt!
+  shortPerp: BigInt!
+  longSquart: BigInt!
+  shortSquart: BigInt!
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
+
+# uniswap subgraph
 
 enum Interval {
   HOURLY
@@ -133,90 +222,11 @@ type AggregatedUniswapPriceEntity @entity {
   closePrice: BigInt!
 }
 
-type RebalanceHistoryItem @entity {
-  id: ID!
-  asset: AssetEntity!
-  tickLower: BigInt!
-  tickUpper: BigInt!
-  profit: BigInt!
-  createdAt: BigInt!
-}
-
-type LPRevenueDaily @entity {
+type UniFeeGrowthHourly @entity {
   id: ID! # address-yyyy-MM-dd
-  fee0: BigInt!
-  fee1: BigInt!
-  premiumSupply: BigInt!
-  premiumBorrow: BigInt!
-  supplyInterest0: BigInt!
-  supplyInterest1: BigInt!
-  borrowInterest0: BigInt!
-  borrowInterest1: BigInt!
-  createdAt: BigInt!
-  updatedAt: BigInt!
-}
-
-type AccumulatedProtocolFeeDaily @entity {
-  id: ID! # address-yyyy-MM-dd
-  accumulatedProtocolFee0: BigInt!
-  accumulatedProtocolFee1: BigInt!
-  withdrawnProtocolFee0: BigInt!
-  withdrawnProtocolFee1: BigInt!
-  createdAt: BigInt!
-  updatedAt: BigInt!
-}
-
-type TotalTokensEntity @entity {
-  id: ID! # total - assetId
-  growthCount: BigInt!
-  createdAt: BigInt!
-  updatedAt: BigInt!
-}
-
-type InterestGrowthTx @entity {
-  id: ID! # address/assetId - TotalTokensEntity.growthCount
-  assetId: BigInt!
-  accumulatedInterests: BigInt!
-  accumulatedDebts: BigInt!
-  accumulatedPremiumSupply: BigInt!
-  accumulatedPremiumBorrow: BigInt!
-  accumulatedFee0: BigInt!
-  accumulatedFee1: BigInt!
-  assetGrowth: BigInt!
-  debtGrowth: BigInt!
-  supplyPremiumGrowth: BigInt!
-  borrowPremiumGrowth: BigInt!
-  fee0Growth: BigInt!
-  fee1Growth: BigInt!
-  createdAt: BigInt!
-}
-
-type InterestDaily @entity {
-  id: ID! # address-assetId-yyyy-MM-dd
-  assetId: BigInt!
-  assetGrowth: BigInt!
-  debtGrowth: BigInt!
-  createdAt: BigInt!
-  updatedAt: BigInt!
-}
-
-type OpenInterestTotal @entity {
-  id: ID! # address-assetId
-  assetId: BigInt!
-  longPerp: BigInt!
-  shortPerp: BigInt!
-  longSquart: BigInt!
-  shortSquart: BigInt!
-  createdAt: BigInt!
-  updatedAt: BigInt!
-}
-type OpenInterestDaily @entity {
-  id: ID! # address-assetId-yyyy-MM-dd
-  assetId: BigInt!
-  longPerp: BigInt!
-  shortPerp: BigInt!
-  longSquart: BigInt!
-  shortSquart: BigInt!
+  address: Bytes!
+  feeGrowthGlobal0X128: BigInt!
+  feeGrowthGlobal1X128: BigInt!
   createdAt: BigInt!
   updatedAt: BigInt!
 }
