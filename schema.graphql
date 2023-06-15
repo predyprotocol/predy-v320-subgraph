@@ -1,14 +1,14 @@
-type ControllerEntity @entity {
-  id: ID! # controllerAddress
-  contractAddress: Bytes # address
-  pairs: [PairEntity!]! @derivedFrom(field: "controller")
+type PairGroupEntity @entity {
+  id: ID! # pairGroupId
+  stableTokenAddress: Bytes! # address
+  pairs: [PairEntity!]! @derivedFrom(field: "pairGroup")
   createdAt: BigInt!
   updatedAt: BigInt!
 }
 
 type PairEntity @entity {
   id: ID! # controllerAddress-assetId
-  controller: ControllerEntity
+  pairGroup: PairGroupEntity!
   pairId: BigInt!
   uniswapPool: Bytes! # address
   token0: TokenEntity

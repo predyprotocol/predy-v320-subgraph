@@ -23,7 +23,9 @@ dataSources:
       eventHandlers:
         - event: OperatorUpdated(address)
           handler: handleOperatorUpdated
-        - event: PairAdded(uint256,address)
+        - event: PairGroupAdded(uint256,address)
+          handler: handlePairGroupAdded
+        - event: PairAdded(uint256,uint256,address)
           handler: handlePairAdded
         - event: VaultCreated(uint256,address,bool)
           handler: handleVaultCreated

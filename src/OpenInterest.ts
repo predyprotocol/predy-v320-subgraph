@@ -12,7 +12,6 @@ class OpenAndCloseAmount {
 }
 
 export function updateOpenInterest(
-  controllerAddress: Bytes,
   assetId: BigInt,
   eventTime: BigInt,
   vaultAmount: BigInt,
@@ -20,8 +19,8 @@ export function updateOpenInterest(
   vaultSqrtAmount: BigInt,
   tradeSqrtAmount: BigInt
 ): void {
-  const openInterstDaily = ensureOpenInterestDaily(controllerAddress, assetId, eventTime)
-  const openInterstTotal = ensureOpenInterestTotal(controllerAddress, assetId, eventTime)
+  const openInterstDaily = ensureOpenInterestDaily(assetId, eventTime)
+  const openInterstTotal = ensureOpenInterestTotal(assetId, eventTime)
 
   const nextPerpPosition = calculateOpenInterest(openInterstTotal.longPerp, openInterstTotal.shortPerp, vaultAmount, tradeAmount)
   const nextSqrtPosition = calculateOpenInterest(openInterstTotal.longSquart, openInterstTotal.shortSquart, vaultSqrtAmount, tradeSqrtAmount)

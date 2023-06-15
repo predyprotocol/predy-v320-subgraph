@@ -2682,12 +2682,37 @@
       },
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "pairGroupId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_uniswapPool",
         "type": "address"
       }
     ],
     "name": "PairAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "stableAsset",
+        "type": "address"
+      }
+    ],
+    "name": "PairGroupAdded",
     "type": "event"
   },
   {

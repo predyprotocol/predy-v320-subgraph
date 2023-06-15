@@ -1,5 +1,5 @@
 {
-  "name": "@predy/v2-subgraph",
+  "name": "@predy/v5-subgraph",
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
