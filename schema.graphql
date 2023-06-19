@@ -18,6 +18,12 @@ type PairEntity @entity {
   sqrtTotalSupply: BigInt!
   sqrtTotalBorrow: BigInt!
   rebalanceHistory: [RebalanceHistoryItem!]! @derivedFrom(field: "pair")
+  positions: [OpenPositionEntity!]! @derivedFrom(field: "pair")
+  history: [TradeHistoryItem!]! @derivedFrom(field: "pair")
+  feeData: [FeeEntity!]! @derivedFrom(field: "pair")
+  feeDayData: [FeeDaily!]! @derivedFrom(field: "pair")
+  oiDayData: [OpenInterestDaily!]! @derivedFrom(field: "pair")
+  oiTotal: [OpenInterestTotal!]! @derivedFrom(field: "pair")
   createdAt: BigInt!
   updatedAt: BigInt!
 }
@@ -171,6 +177,7 @@ type FeeEntity @entity {
 
 type FeeDaily @entity {
   id: ID! # address-pairId-yyyy-MM-dd
+  pair: PairEntity!
   supplyStableFee: BigInt!
   supplyUnderlyingFee: BigInt!
   borrowStableFee: BigInt!
@@ -185,7 +192,7 @@ type FeeDaily @entity {
 
 type OpenInterestDaily @entity {
   id: ID! # address-assetId-yyyy-MM-dd
-  assetId: BigInt!
+  pair: PairEntity!
   longPerp: BigInt!
   shortPerp: BigInt!
   longSquart: BigInt!
@@ -196,7 +203,7 @@ type OpenInterestDaily @entity {
 
 type OpenInterestTotal @entity {
   id: ID! # address-assetId
-  assetId: BigInt!
+  pair: PairEntity!
   longPerp: BigInt!
   shortPerp: BigInt!
   longSquart: BigInt!

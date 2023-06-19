@@ -22,8 +22,18 @@ export function updateOpenInterest(
   const openInterstDaily = ensureOpenInterestDaily(assetId, eventTime)
   const openInterstTotal = ensureOpenInterestTotal(assetId, eventTime)
 
-  const nextPerpPosition = calculateOpenInterest(openInterstTotal.longPerp, openInterstTotal.shortPerp, vaultAmount, tradeAmount)
-  const nextSqrtPosition = calculateOpenInterest(openInterstTotal.longSquart, openInterstTotal.shortSquart, vaultSqrtAmount, tradeSqrtAmount)
+  const nextPerpPosition = calculateOpenInterest(
+    openInterstTotal.longPerp,
+    openInterstTotal.shortPerp,
+    vaultAmount,
+    tradeAmount
+  )
+  const nextSqrtPosition = calculateOpenInterest(
+    openInterstTotal.longSquart,
+    openInterstTotal.shortSquart,
+    vaultSqrtAmount,
+    tradeSqrtAmount
+  )
 
   openInterstTotal.longPerp = nextPerpPosition.nextTotalLong
   openInterstTotal.shortPerp = nextPerpPosition.nextTotalShort
@@ -48,7 +58,10 @@ function calculateOpenInterest(
   let nextTotalLong = totalLong
   let nextTotalShort = totalShort
 
-  const openAndCloseAmounts = calculateOpenAndCloseAmounts(vaultAmount, tradeAmount)
+  const openAndCloseAmounts = calculateOpenAndCloseAmounts(
+    vaultAmount,
+    tradeAmount
+  )
   const openAmount = openAndCloseAmounts.openAmount
   const closeAmount = openAndCloseAmounts.closeAmount
 
@@ -78,10 +91,10 @@ function calculateOpenAndCloseAmounts(
   let closeAmount = BigInt.zero()
 
   if (vaultAmount.times(tradeAmount).ge(BigInt.zero())) {
-    openAmount = tradeAmount;
+    openAmount = tradeAmount
   } else {
     if (vaultAmount.abs() >= tradeAmount.abs()) {
-      closeAmount = tradeAmount;
+      closeAmount = tradeAmount
     } else {
       openAmount = vaultAmount.plus(tradeAmount)
       closeAmount = vaultAmount.neg()

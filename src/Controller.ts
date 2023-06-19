@@ -44,8 +44,7 @@ import {
 } from './history'
 import { updateOpenInterest } from './OpenInterest'
 
-export function handleOperatorUpdated(event: OperatorUpdated): void { }
-
+export function handleOperatorUpdated(event: OperatorUpdated): void {}
 
 export function handlePairGroupAdded(event: PairGroupAdded): void {
   const pairGroup = ensurePairGroupEntity(
@@ -64,10 +63,7 @@ export function handlePairAdded(event: PairAdded): void {
     event.block.timestamp
   )
 
-  const pair = ensurePairEntity(
-    event.params.pairId,
-    event.block.timestamp
-  )
+  const pair = ensurePairEntity(event.params.pairId, event.block.timestamp)
 
   pair.pairGroup = pairGroup.id
   pair.pairId = event.params.pairId
@@ -206,9 +202,7 @@ function closeVault(
   timestamp: BigInt
 ): void {
   const vault = VaultEntity.load(toVaultId(vaultId))
-  const isolatedVault = VaultEntity.load(
-    toVaultId(isolatedVaultId)
-  )
+  const isolatedVault = VaultEntity.load(toVaultId(isolatedVaultId))
 
   if (!vault || !isolatedVault) {
     return
@@ -223,12 +217,7 @@ function closeVault(
   vault.save()
   isolatedVault.save()
 
-  createMarginHistory(
-    txHash.toHex(),
-    vaultId,
-    marginAmount,
-    timestamp
-  )
+  createMarginHistory(txHash.toHex(), vaultId, marginAmount, timestamp)
   createMarginHistory(
     txHash.toHex(),
     isolatedVaultId,
@@ -239,7 +228,6 @@ function closeVault(
 
 export function handlePositionUpdated(event: PositionUpdated): void {
   updatePosition(
-    event.address,
     event.transaction.hash,
     event.logIndex,
     event.params.vaultId,
@@ -260,7 +248,6 @@ export function handlePositionLiquidated(event: PositionLiquidated): void {
   }
 
   updatePosition(
-    event.address,
     event.transaction.hash,
     event.logIndex,
     event.params.vaultId,
@@ -274,7 +261,6 @@ export function handlePositionLiquidated(event: PositionLiquidated): void {
 }
 
 function updatePosition(
-  controllerAddress: Bytes,
   txHash: Bytes,
   logIndex: BigInt,
   vaultId: BigInt,
@@ -285,11 +271,7 @@ function updatePosition(
   fee: BigInt,
   timestamp: BigInt
 ): void {
-  const openPosition = ensureOpenPosition(
-    pairId,
-    vaultId,
-    timestamp
-  )
+  const openPosition = ensureOpenPosition(pairId, vaultId, timestamp)
 
   // Update OI
   updateOpenInterest(
@@ -337,23 +319,17 @@ function updatePosition(
   }
 
   if (!fee.equals(BigInt.zero())) {
-    createFeeHistory(
-      txHash.toHex(),
-      logIndex,
-      vaultId,
-      fee,
-      timestamp
-    )
+    createFeeHistory(txHash.toHex(), logIndex, vaultId, fee, timestamp)
   }
 
   if (!tradeAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-      '-' +
-      logIndex.toString() +
-      '-' +
-      vaultId.toString() +
-      '-perp'
+        '-' +
+        logIndex.toString() +
+        '-' +
+        vaultId.toString() +
+        '-perp'
     )
 
     historyItem.vault = toVaultId(vaultId)
@@ -372,11 +348,11 @@ function updatePosition(
   if (!tradeSqrtAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-      '-' +
-      logIndex.toString() +
-      '-' +
-      vaultId.toString() +
-      '-sqrt'
+        '-' +
+        logIndex.toString() +
+        '-' +
+        vaultId.toString() +
+        '-sqrt'
     )
 
     historyItem.vault = toVaultId(vaultId)
@@ -409,13 +385,9 @@ export function handleRebalanced(event: Rebalanced): void {
 
 export function handleScaledAssetPositionUpdated(
   event: ScaledAssetPositionUpdated
-): void {
-}
+): void {}
 
-export function handleSqrtPositionUpdated(
-  event: SqrtPositionUpdated
-): void {
-}
+export function handleSqrtPositionUpdated(event: SqrtPositionUpdated): void {}
 
 export function handleInterestGrowthUpdated(
   event: InterestGrowthUpdated
@@ -432,49 +404,71 @@ export function handleInterestGrowthUpdated(
     timestamp
   )
 
-  const totalStableSupply = stableStatus.assetScaler.times(
-    stableStatus.totalCompoundDeposited
-  ).plus(stableStatus.totalNormalDeposited)
+  const totalStableSupply = stableStatus.assetScaler
+    .times(stableStatus.totalCompoundDeposited)
+    .plus(stableStatus.totalNormalDeposited)
   const totalStableBorrow = stableStatus.totalNormalBorrowed
 
-  feeEntity.supplyStableInterest = event.params.interestRateStable.times(totalStableBorrow).div(totalStableSupply)
+  feeEntity.supplyStableInterest = event.params.interestRateStable
+    .times(totalStableBorrow)
+    .div(totalStableSupply)
   feeEntity.borrowStableInterest = event.params.interestRateStable
-  feeEntity.supplyStableFee = feeEntity.supplyStableInterest.times(totalStableSupply).div(ONE)
-  feeEntity.supplyStableInterestGrowth = feeEntity.supplyStableInterestGrowth.plus(feeEntity.supplyStableInterest)
-  feeEntity.borrowStableFee = feeEntity.borrowStableInterest.times(totalStableBorrow).div(ONE)
-  feeEntity.borrowStableInterestGrowth = feeEntity.borrowStableInterestGrowth.plus(feeEntity.borrowStableInterest)
+  feeEntity.supplyStableFee = feeEntity.supplyStableInterest
+    .times(totalStableSupply)
+    .div(ONE)
+  feeEntity.supplyStableInterestGrowth =
+    feeEntity.supplyStableInterestGrowth.plus(feeEntity.supplyStableInterest)
+  feeEntity.borrowStableFee = feeEntity.borrowStableInterest
+    .times(totalStableBorrow)
+    .div(ONE)
+  feeEntity.borrowStableInterestGrowth =
+    feeEntity.borrowStableInterestGrowth.plus(feeEntity.borrowStableInterest)
 
-  const totalUnderlyingSupply = underlyingStatus.assetScaler.times(
-    underlyingStatus.totalCompoundDeposited
-  ).plus(underlyingStatus.totalNormalDeposited)
+  const totalUnderlyingSupply = underlyingStatus.assetScaler
+    .times(underlyingStatus.totalCompoundDeposited)
+    .plus(underlyingStatus.totalNormalDeposited)
   const totalUnderlyingBorrow = underlyingStatus.totalNormalBorrowed
 
-  feeEntity.supplyUnderlyingInterest = event.params.interestRateUnderlying.times(totalUnderlyingBorrow).div(totalUnderlyingSupply)
+  feeEntity.supplyUnderlyingInterest = event.params.interestRateUnderlying
+    .times(totalUnderlyingBorrow)
+    .div(totalUnderlyingSupply)
   feeEntity.borrowUnderlyingInterest = event.params.interestRateUnderlying
-  feeEntity.supplyUnderlyingFee = feeEntity.supplyUnderlyingInterest.times(totalUnderlyingSupply).div(ONE)
-  feeEntity.supplyUnderlyingInterestGrowth = feeEntity.supplyUnderlyingInterestGrowth.plus(feeEntity.supplyUnderlyingInterest)
-  feeEntity.borrowUnderlyingFee = feeEntity.borrowUnderlyingInterest.times(totalUnderlyingBorrow).div(ONE)
-  feeEntity.borrowUnderlyingInterestGrowth = feeEntity.borrowUnderlyingInterestGrowth.plus(feeEntity.borrowUnderlyingInterest)
+  feeEntity.supplyUnderlyingFee = feeEntity.supplyUnderlyingInterest
+    .times(totalUnderlyingSupply)
+    .div(ONE)
+  feeEntity.supplyUnderlyingInterestGrowth =
+    feeEntity.supplyUnderlyingInterestGrowth.plus(
+      feeEntity.supplyUnderlyingInterest
+    )
+  feeEntity.borrowUnderlyingFee = feeEntity.borrowUnderlyingInterest
+    .times(totalUnderlyingBorrow)
+    .div(ONE)
+  feeEntity.borrowUnderlyingInterestGrowth =
+    feeEntity.borrowUnderlyingInterestGrowth.plus(
+      feeEntity.borrowUnderlyingInterest
+    )
 
   feeEntity.save()
 
-  const feeDaily = ensureFeeDaily(
-    event.address,
-    pairId,
-    timestamp
-  )
+  const feeDaily = ensureFeeDaily(event.address, pairId, timestamp)
 
-  feeDaily.supplyStableFee = feeDaily.supplyStableFee.plus(feeEntity.supplyStableFee)
-  feeDaily.borrowStableFee = feeDaily.borrowStableFee.plus(feeEntity.borrowStableFee)
-  feeDaily.supplyUnderlyingFee = feeDaily.supplyUnderlyingFee.plus(feeEntity.supplyUnderlyingFee)
-  feeDaily.borrowUnderlyingFee = feeDaily.borrowUnderlyingFee.plus(feeEntity.borrowUnderlyingFee)
+  feeDaily.supplyStableFee = feeDaily.supplyStableFee.plus(
+    feeEntity.supplyStableFee
+  )
+  feeDaily.borrowStableFee = feeDaily.borrowStableFee.plus(
+    feeEntity.borrowStableFee
+  )
+  feeDaily.supplyUnderlyingFee = feeDaily.supplyUnderlyingFee.plus(
+    feeEntity.supplyUnderlyingFee
+  )
+  feeDaily.borrowUnderlyingFee = feeDaily.borrowUnderlyingFee.plus(
+    feeEntity.borrowUnderlyingFee
+  )
 
   feeDaily.save()
 }
 
-export function handlePremiumGrowthUpdated(
-  event: PremiumGrowthUpdated
-): void {
+export function handlePremiumGrowthUpdated(event: PremiumGrowthUpdated): void {
   const pairId = event.params.pairId
   const timestamp = event.block.timestamp
 
@@ -489,34 +483,62 @@ export function handlePremiumGrowthUpdated(
   const totalBorrow = event.params.borrowAmount
   const spread = event.params.spread
 
-  feeEntity.supplySqrtInterest0 = event.params.fee0Growth.times(totalSupply.plus(totalBorrow.times(spread).div(BigInt.fromU32(1000)))).div(totalSupply)
-  feeEntity.supplySqrtInterest1 = event.params.fee1Growth.times(totalSupply.plus(totalBorrow.times(spread).div(BigInt.fromU32(1000)))).div(totalSupply)
+  feeEntity.supplySqrtInterest0 = event.params.fee0Growth
+    .times(
+      totalSupply.plus(totalBorrow.times(spread).div(BigInt.fromU32(1000)))
+    )
+    .div(totalSupply)
+  feeEntity.supplySqrtInterest1 = event.params.fee1Growth
+    .times(
+      totalSupply.plus(totalBorrow.times(spread).div(BigInt.fromU32(1000)))
+    )
+    .div(totalSupply)
 
-  feeEntity.borrowSqrtInterest0 = event.params.fee0Growth.times(spread.plus(BigInt.fromU32(1000))).div(BigInt.fromU32(1000))
-  feeEntity.borrowSqrtInterest1 = event.params.fee1Growth.times(spread.plus(BigInt.fromU32(1000))).div(BigInt.fromU32(1000))
+  feeEntity.borrowSqrtInterest0 = event.params.fee0Growth
+    .times(spread.plus(BigInt.fromU32(1000)))
+    .div(BigInt.fromU32(1000))
+  feeEntity.borrowSqrtInterest1 = event.params.fee1Growth
+    .times(spread.plus(BigInt.fromU32(1000)))
+    .div(BigInt.fromU32(1000))
 
-  feeEntity.supplySqrtFee0 = feeEntity.supplySqrtInterest0.times(totalSupply).div(ONE)
-  feeEntity.supplySqrtFee1 = feeEntity.supplySqrtInterest1.times(totalSupply).div(ONE)
-  feeEntity.borrowSqrtFee0 = feeEntity.borrowSqrtInterest0.times(totalBorrow).div(ONE)
-  feeEntity.borrowSqrtFee1 = feeEntity.borrowSqrtInterest1.times(totalBorrow).div(ONE)
+  feeEntity.supplySqrtFee0 = feeEntity.supplySqrtInterest0
+    .times(totalSupply)
+    .div(ONE)
+  feeEntity.supplySqrtFee1 = feeEntity.supplySqrtInterest1
+    .times(totalSupply)
+    .div(ONE)
+  feeEntity.borrowSqrtFee0 = feeEntity.borrowSqrtInterest0
+    .times(totalBorrow)
+    .div(ONE)
+  feeEntity.borrowSqrtFee1 = feeEntity.borrowSqrtInterest1
+    .times(totalBorrow)
+    .div(ONE)
 
-  feeEntity.supplySqrtInterest0Growth = feeEntity.supplySqrtInterest0Growth.plus(feeEntity.supplySqrtInterest0)
-  feeEntity.supplySqrtInterest1Growth = feeEntity.supplySqrtInterest1Growth.plus(feeEntity.supplySqrtInterest1)
-  feeEntity.borrowSqrtInterest0Growth = feeEntity.borrowSqrtInterest0Growth.plus(feeEntity.borrowSqrtInterest0)
-  feeEntity.borrowSqrtInterest1Growth = feeEntity.borrowSqrtInterest1Growth.plus(feeEntity.borrowSqrtInterest1)
+  feeEntity.supplySqrtInterest0Growth =
+    feeEntity.supplySqrtInterest0Growth.plus(feeEntity.supplySqrtInterest0)
+  feeEntity.supplySqrtInterest1Growth =
+    feeEntity.supplySqrtInterest1Growth.plus(feeEntity.supplySqrtInterest1)
+  feeEntity.borrowSqrtInterest0Growth =
+    feeEntity.borrowSqrtInterest0Growth.plus(feeEntity.borrowSqrtInterest0)
+  feeEntity.borrowSqrtInterest1Growth =
+    feeEntity.borrowSqrtInterest1Growth.plus(feeEntity.borrowSqrtInterest1)
 
   feeEntity.save()
 
-  const feeDaily = ensureFeeDaily(
-    event.address,
-    pairId,
-    timestamp
-  )
+  const feeDaily = ensureFeeDaily(event.address, pairId, timestamp)
 
-  feeDaily.supplySqrtFee0 = feeDaily.supplySqrtFee0.plus(feeEntity.supplySqrtFee0)
-  feeDaily.supplySqrtFee1 = feeDaily.supplySqrtFee1.plus(feeEntity.supplySqrtFee1)
-  feeDaily.borrowSqrtFee0 = feeDaily.borrowSqrtFee0.plus(feeEntity.borrowSqrtFee0)
-  feeDaily.borrowSqrtFee1 = feeDaily.borrowSqrtFee1.plus(feeEntity.borrowSqrtFee1)
+  feeDaily.supplySqrtFee0 = feeDaily.supplySqrtFee0.plus(
+    feeEntity.supplySqrtFee0
+  )
+  feeDaily.supplySqrtFee1 = feeDaily.supplySqrtFee1.plus(
+    feeEntity.supplySqrtFee1
+  )
+  feeDaily.borrowSqrtFee0 = feeDaily.borrowSqrtFee0.plus(
+    feeEntity.borrowSqrtFee0
+  )
+  feeDaily.borrowSqrtFee1 = feeDaily.borrowSqrtFee1.plus(
+    feeEntity.borrowSqrtFee1
+  )
 
   feeDaily.save()
 }

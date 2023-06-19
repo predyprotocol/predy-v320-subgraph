@@ -15,7 +15,6 @@ import {
 } from '../generated/schema'
 import { Rebalanced } from '../generated/Controller/Controller'
 
-
 export function ensurePairGroupEntity(
   pairGroupId: BigInt,
   eventTime: BigInt
@@ -55,7 +54,6 @@ export function ensurePairEntity(
   return entity
 }
 
-
 export function ensureTokenEntity(
   address: Bytes,
   pairId: BigInt,
@@ -78,16 +76,12 @@ export function ensureTokenEntity(
   return entity
 }
 
-
 export function ensureOpenPosition(
   pairId: BigInt,
   vaultId: BigInt,
   eventTime: BigInt
 ): OpenPositionEntity {
-  const id =
-    vaultId.toString() +
-    '-' +
-    pairId.toString()
+  const id = vaultId.toString() + '-' + pairId.toString()
 
   let openPosition = OpenPositionEntity.load(id)
 
@@ -198,7 +192,7 @@ export function ensureOpenInterestDaily(
 
   if (openInterest == null) {
     openInterest = new OpenInterestDaily(id)
-    openInterest.assetId = assetId
+    openInterest.pair = toPairId(assetId)
     openInterest.longPerp = BigInt.zero()
     openInterest.shortPerp = BigInt.zero()
     openInterest.longSquart = BigInt.zero()
@@ -221,7 +215,7 @@ export function ensureOpenInterestTotal(
 
   if (openInterest == null) {
     openInterest = new OpenInterestTotal(id)
-    openInterest.assetId = assetId
+    openInterest.pair = toPairId(assetId)
     openInterest.longPerp = BigInt.zero()
     openInterest.shortPerp = BigInt.zero()
     openInterest.longSquart = BigInt.zero()
@@ -252,11 +246,13 @@ export function ensureFeeEntity(
   txHash: Bytes,
   eventTime: BigInt
 ): FeeEntity {
-  const id = controllerAddress.toHex() + '-' + pairId.toString() + '-' + txHash.toHex()
+  const id =
+    controllerAddress.toHex() + '-' + pairId.toString() + '-' + txHash.toHex()
   let entity = FeeEntity.load(id)
 
   if (entity == null) {
     entity = new FeeEntity(id)
+    entity.pair = toPairId(pairId)
     entity.supplyStableFee = BigInt.fromI32(0)
     entity.supplyUnderlyingFee = BigInt.fromI32(0)
     entity.supplySqrtFee0 = BigInt.fromI32(0)
@@ -295,11 +291,17 @@ export function ensureFeeDaily(
   pairId: BigInt,
   eventTime: BigInt
 ): FeeDaily {
-  const id = controllerAddress.toHex() + '-' + pairId.toString() + '-' + toISODateString(eventTime)
+  const id =
+    controllerAddress.toHex() +
+    '-' +
+    pairId.toString() +
+    '-' +
+    toISODateString(eventTime)
   let entity = FeeDaily.load(id)
 
   if (entity == null) {
     entity = new FeeDaily(id)
+    entity.pair = toPairId(pairId)
     entity.supplyStableFee = BigInt.fromI32(0)
     entity.supplyUnderlyingFee = BigInt.fromI32(0)
     entity.supplySqrtFee0 = BigInt.fromI32(0)
@@ -348,13 +350,14 @@ export function toVaultId(vaultId: BigInt): string {
 }
 
 export function toRebalanceId(event: Rebalanced): string {
-  return event.transaction.hash.toHex() +
+  return (
+    event.transaction.hash.toHex() +
     '-' +
     event.transactionLogIndex.toString() +
     '-' +
     event.params.pairId.toString()
+  )
 }
-
 
 export function toStrategyUserPositionId(
   address: Bytes,
