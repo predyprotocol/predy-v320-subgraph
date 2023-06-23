@@ -19,7 +19,8 @@ import {
 import {
   RebalanceHistoryItem,
   TradeHistoryItem,
-  VaultEntity
+  VaultEntity,
+  VaultMarginDaily
 } from '../generated/schema'
 import {
   createFeeHistory,
@@ -29,6 +30,7 @@ import {
   ensureInterestGrowthTx,
   ensureOpenPosition,
   ensureTotalTokensEntity,
+  ensureVaultMarginDaily,
   toAssetId,
   toVaultId
 } from './helper'
@@ -137,6 +139,13 @@ export function handleMarginUpdated(event: MarginUpdated): void {
   vault.margin = vault.margin.plus(event.params.marginAmount)
 
   vault.save()
+
+  // Update vault margin daily
+  const vaultMarginDaily = ensureVaultMarginDaily(event.address, event.block.timestamp)
+  vaultMarginDaily.margin = vaultMarginDaily.margin.plus(
+    event.params.marginAmount
+  )
+  vaultMarginDaily.save()
 
   createMarginHistory(
     event.address,
@@ -343,6 +352,7 @@ function updatePosition(
 
   openPosition.save()
 
+  // Update vault margin
   const vault = VaultEntity.load(toVaultId(controllerAddress, vaultId))
   if (vault) {
     vault.margin = vault.margin
@@ -350,6 +360,14 @@ function updatePosition(
       .plus(payoff.sqrtPayoff)
       .plus(fee)
   }
+
+  // Update vault margin daily
+  const vaultMarginDaily = ensureVaultMarginDaily(controllerAddress, timestamp)
+  vaultMarginDaily.margin = vaultMarginDaily.margin
+    .plus(payoff.perpPayoff)
+    .plus(payoff.sqrtPayoff)
+    .plus(fee)
+  vaultMarginDaily.save()
 
   if (!fee.equals(BigInt.zero())) {
     createFeeHistory(
@@ -410,18 +428,40 @@ function updatePosition(
 }
 
 export function handleFeeCollected(event: FeeCollected): void {
+
   const openPosition = ensureOpenPosition(
     event.address,
     event.params.assetId,
     event.params.vaultId,
     event.block.timestamp
   )
-
+  
   openPosition.feeAmount = openPosition.feeAmount.plus(
     event.params.feeCollected
   )
 
+
   openPosition.save()
+
+  // Update vault margin
+  const vault = VaultEntity.load(
+    toVaultId(event.address, event.params.vaultId)
+  )
+
+  if (vault) {
+    vault.margin = vault.margin
+      .plus(event.params.feeCollected)
+  }
+
+  // Update vault margin daily
+  const vaultMarginDaily = ensureVaultMarginDaily(
+    event.address,
+    event.block.timestamp
+  )
+  vaultMarginDaily.margin = vaultMarginDaily.margin.plus(
+    event.params.feeCollected
+  )
+  vaultMarginDaily.save()
 
   if (!event.params.feeCollected.equals(BigInt.zero())) {
     createFeeHistory(

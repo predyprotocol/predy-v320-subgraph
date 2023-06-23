@@ -220,3 +220,10 @@ type OpenInterestDaily @entity {
   createdAt: BigInt!
   updatedAt: BigInt!
 }
+
+type VaultMarginDaily @entity {
+  id: ID! # controllerAddress-yyyy-MM-dd
+  margin: BigInt! # margin sum of all vaultId
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
