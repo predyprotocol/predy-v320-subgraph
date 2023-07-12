@@ -1,8 +1,6 @@
 import { BigInt, Bytes } from '@graphprotocol/graph-ts'
 import {
   InterestGrowthUpdated,
-  IsolatedVaultClosed,
-  IsolatedVaultOpened,
   MarginUpdated,
   OperatorUpdated,
   PairAdded,
@@ -33,6 +31,7 @@ import {
   ensureOpenPosition,
   ensurePairEntity,
   ensurePairGroupEntity,
+  toPairGroupId,
   toPairId,
   toRebalanceId,
   toVaultId
@@ -44,7 +43,7 @@ import {
 } from './history'
 import { updateOpenInterest } from './OpenInterest'
 
-export function handleOperatorUpdated(event: OperatorUpdated): void {}
+export function handleOperatorUpdated(event: OperatorUpdated): void { }
 
 export function handlePairGroupAdded(event: PairGroupAdded): void {
   const pairGroup = ensurePairGroupEntity(
@@ -75,7 +74,7 @@ export function handlePairAdded(event: PairAdded): void {
 export function handleVaultCreated(event: VaultCreated): void {
   const vault = new VaultEntity(toVaultId(event.params.vaultId))
 
-  vault.contractAddress = event.address
+  vault.pairGroup = toPairGroupId(event.params.pairGroupId)
   vault.vaultId = event.params.vaultId
   vault.owner = event.params.owner
   vault.margin = BigInt.zero()
@@ -128,51 +127,15 @@ export function handleMarginUpdated(event: MarginUpdated): void {
 
   vault.margin = vault.margin.plus(event.params.marginAmount)
 
-  vault.save()
-
-  createMarginHistory(
-    event.transaction.hash.toHex(),
-    event.params.vaultId,
-    event.params.marginAmount,
-    event.block.timestamp
-  )
-}
-
-export function handleIsolatedVaultOpened(event: IsolatedVaultOpened): void {
-  const vault = VaultEntity.load(toVaultId(event.params.vaultId))
-  const isolatedVault = VaultEntity.load(
-    toVaultId(event.params.isolatedVaultId)
-  )
-
-  if (!vault || !isolatedVault) {
-    return
+  if (!vault.isMainVault && vault.margin.equals(BigInt.zero())) {
+    vault.isClosed = true
   }
 
-  vault.margin = vault.margin.minus(event.params.marginAmount)
-  isolatedVault.margin = isolatedVault.margin.plus(event.params.marginAmount)
-
   vault.save()
-  isolatedVault.save()
 
   createMarginHistory(
     event.transaction.hash.toHex(),
     event.params.vaultId,
-    event.params.marginAmount.neg(),
-    event.block.timestamp
-  )
-  createMarginHistory(
-    event.transaction.hash.toHex(),
-    isolatedVault.vaultId,
-    event.params.marginAmount,
-    event.block.timestamp
-  )
-}
-
-export function handleIsolatedVaultClosed(event: IsolatedVaultClosed): void {
-  closeVault(
-    event.transaction.hash,
-    event.params.vaultId,
-    event.params.isolatedVaultId,
     event.params.marginAmount,
     event.block.timestamp
   )
@@ -325,11 +288,11 @@ function updatePosition(
   if (!tradeAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-        '-' +
-        logIndex.toString() +
-        '-' +
-        vaultId.toString() +
-        '-perp'
+      '-' +
+      logIndex.toString() +
+      '-' +
+      vaultId.toString() +
+      '-perp'
     )
 
     historyItem.vault = toVaultId(vaultId)
@@ -348,11 +311,11 @@ function updatePosition(
   if (!tradeSqrtAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-        '-' +
-        logIndex.toString() +
-        '-' +
-        vaultId.toString() +
-        '-sqrt'
+      '-' +
+      logIndex.toString() +
+      '-' +
+      vaultId.toString() +
+      '-sqrt'
     )
 
     historyItem.vault = toVaultId(vaultId)
@@ -385,9 +348,9 @@ export function handleRebalanced(event: Rebalanced): void {
 
 export function handleScaledAssetPositionUpdated(
   event: ScaledAssetPositionUpdated
-): void {}
+): void { }
 
-export function handleSqrtPositionUpdated(event: SqrtPositionUpdated): void {}
+export function handleSqrtPositionUpdated(event: SqrtPositionUpdated): void { }
 
 export function handleInterestGrowthUpdated(
   event: InterestGrowthUpdated
@@ -416,13 +379,12 @@ export function handleInterestGrowthUpdated(
   feeEntity.supplyStableFee = feeEntity.supplyStableInterest
     .times(totalStableSupply)
     .div(ONE)
-  feeEntity.supplyStableInterestGrowth =
-    feeEntity.supplyStableInterestGrowth.plus(feeEntity.supplyStableInterest)
+  feeEntity.supplyStableInterestGrowth = stableStatus.assetGrowth
+
   feeEntity.borrowStableFee = feeEntity.borrowStableInterest
     .times(totalStableBorrow)
     .div(ONE)
-  feeEntity.borrowStableInterestGrowth =
-    feeEntity.borrowStableInterestGrowth.plus(feeEntity.borrowStableInterest)
+  feeEntity.borrowStableInterestGrowth = stableStatus.debtGrowth
 
   const totalUnderlyingSupply = underlyingStatus.assetScaler
     .times(underlyingStatus.totalCompoundDeposited)
@@ -436,17 +398,11 @@ export function handleInterestGrowthUpdated(
   feeEntity.supplyUnderlyingFee = feeEntity.supplyUnderlyingInterest
     .times(totalUnderlyingSupply)
     .div(ONE)
-  feeEntity.supplyUnderlyingInterestGrowth =
-    feeEntity.supplyUnderlyingInterestGrowth.plus(
-      feeEntity.supplyUnderlyingInterest
-    )
+  feeEntity.supplyUnderlyingInterestGrowth = underlyingStatus.assetGrowth
   feeEntity.borrowUnderlyingFee = feeEntity.borrowUnderlyingInterest
     .times(totalUnderlyingBorrow)
     .div(ONE)
-  feeEntity.borrowUnderlyingInterestGrowth =
-    feeEntity.borrowUnderlyingInterestGrowth.plus(
-      feeEntity.borrowUnderlyingInterest
-    )
+  feeEntity.borrowUnderlyingInterestGrowth = underlyingStatus.debtGrowth
 
   feeEntity.save()
 

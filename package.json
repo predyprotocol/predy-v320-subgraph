@@ -10,10 +10,8 @@
     "prepare-uni:arbitrum": "mustache config/arbitrum.json subgraph-uni.template.yaml > subgraph.yaml && mustache config/arbitrum.json ./src/contracts.template.ts > ./src/contracts.ts",
     "prepare:arbitrum-goerli": "mustache config/arbitrum-goerli.json subgraph.template.yaml > subgraph.yaml && mustache config/arbitrum-goerli.json ./src/contracts.template.ts > ./src/contracts.ts",
     "prepare-uni:arbitrum-goerli": "mustache config/arbitrum-goerli.json subgraph-uni.template.yaml > subgraph.yaml && mustache config/arbitrum-goerli.json ./src/contracts.template.ts > ./src/contracts.ts",
-    "deploy:arbitrum": "graph deploy --product hosted-service predy-dev/predy-v5-arbitrum",
-    "deploy-uni:arbitrum": "graph deploy --product hosted-service predy-dev/predy-v320-uni-arbitrum",
-    "deploy:arbitrum-goerli": "graph deploy --product hosted-service predy-dev/predy-v5-arbitrum-goerli",
-    "deploy-uni:arbitrum-goerli": "graph deploy --product hosted-service predy-dev/predy-v320-uni-arbitrum-goerli"
+    "deploy:arbitrum": "graph deploy --product hosted-service predy-dev/predy-v4-arbitrum",
+    "deploy:arbitrum-goerli": "graph deploy --product hosted-service predy-dev/predy-v5-arbitrum-goerli"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.36.1",

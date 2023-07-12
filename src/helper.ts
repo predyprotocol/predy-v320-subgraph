@@ -10,8 +10,7 @@ import {
   PairGroupEntity,
   StrategyUserPosition,
   TokenEntity,
-  TradeHistoryItem,
-  UniFeeGrowthHourly
+  TradeHistoryItem
 } from '../generated/schema'
 import { Rebalanced } from '../generated/Controller/Controller'
 
@@ -19,7 +18,7 @@ export function ensurePairGroupEntity(
   pairGroupId: BigInt,
   eventTime: BigInt
 ): PairGroupEntity {
-  const id = pairGroupId.toString()
+  const id = toPairGroupId(pairGroupId)
   let entity = PairGroupEntity.load(id)
 
   if (entity == null) {
@@ -164,24 +163,6 @@ export function createLiquidationHistory(
   historyItem.save()
 }
 
-export function ensureUniFeeGrowthHourly(
-  address: Bytes,
-  eventTime: BigInt
-): UniFeeGrowthHourly {
-  const id = address.toHex() + '-' + toHourlyId(eventTime)
-  let entity = UniFeeGrowthHourly.load(id)
-
-  if (entity == null) {
-    entity = new UniFeeGrowthHourly(id)
-    entity.feeGrowthGlobal0X128 = BigInt.fromI32(0)
-    entity.feeGrowthGlobal1X128 = BigInt.fromI32(0)
-    entity.createdAt = eventTime
-    entity.updatedAt = eventTime
-  }
-
-  return entity
-}
-
 export function ensureOpenInterestDaily(
   assetId: BigInt,
   eventTime: BigInt
@@ -310,6 +291,10 @@ export function ensureFeeDaily(
     entity.borrowUnderlyingFee = BigInt.fromI32(0)
     entity.borrowSqrtFee0 = BigInt.fromI32(0)
     entity.borrowSqrtFee1 = BigInt.fromI32(0)
+    entity.supplyStableInterestGrowth = BigInt.fromI32(0)
+    entity.supplyUnderlyingInterestGrowth = BigInt.fromI32(0)
+    entity.borrowStableInterestGrowth = BigInt.fromI32(0)
+    entity.borrowUnderlyingInterestGrowth = BigInt.fromI32(0)
 
     entity.createdAt = eventTime
   }
@@ -320,16 +305,16 @@ export function ensureFeeDaily(
 }
 
 export function ensureStrategyUserPosition(
-  address: Bytes,
+  strategyId: BigInt,
   account: Bytes,
   eventTime: BigInt
 ): StrategyUserPosition {
-  const id = toStrategyUserPositionId(address, account)
+  const id = toStrategyUserPositionId(strategyId, account)
   let entity = StrategyUserPosition.load(id)
 
   if (entity == null) {
     entity = new StrategyUserPosition(id)
-    entity.address = address
+    entity.strategyId = strategyId
     entity.account = account
     entity.entryValue = BigInt.zero()
     entity.strategyAmount = BigInt.zero()
@@ -339,6 +324,10 @@ export function ensureStrategyUserPosition(
   entity.updatedAt = eventTime
 
   return entity
+}
+
+export function toPairGroupId(pairGroupId: BigInt): string {
+  return pairGroupId.toString()
 }
 
 export function toPairId(pairId: BigInt): string {
@@ -360,8 +349,8 @@ export function toRebalanceId(event: Rebalanced): string {
 }
 
 export function toStrategyUserPositionId(
-  address: Bytes,
+  strategyId: BigInt,
   account: Bytes
 ): string {
-  return address.toHex() + '-' + account.toHex()
+  return strategyId.toString() + '-' + account.toHex()
 }

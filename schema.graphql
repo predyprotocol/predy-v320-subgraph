@@ -39,8 +39,8 @@ type TokenEntity @entity {
 }
 
 type VaultEntity @entity {
-  id: ID! # controllerAddress-vaultId
-  contractAddress: Bytes # address
+  id: ID! # vaultId
+  pairGroup: PairGroupEntity!
   vaultId: BigInt! # uint256
   owner: Bytes! # address
   margin: BigInt! # int256
@@ -110,8 +110,8 @@ type LendingUserHistoryItem @entity {
 }
 
 type StrategyUserPosition @entity {
-  id: ID! # address-account
-  address: Bytes!
+  id: ID! # strategyId-account
+  strategyId: BigInt!
   account: Bytes! # address
   entryValue: BigInt!
   strategyAmount: BigInt!
@@ -126,7 +126,7 @@ enum StrategyAction {
 
 type StrategyUserHistoryItem @entity {
   id: ID!
-  address: Bytes!
+  strategyId: BigInt!
   action: StrategyAction!
   account: Bytes! # address
   strategyAmount: BigInt!
@@ -186,6 +186,10 @@ type FeeDaily @entity {
   supplySqrtFee1: BigInt!
   borrowSqrtFee0: BigInt!
   borrowSqrtFee1: BigInt!
+  supplyStableInterestGrowth: BigInt!
+  supplyUnderlyingInterestGrowth: BigInt!
+  borrowStableInterestGrowth: BigInt!
+  borrowUnderlyingInterestGrowth: BigInt!
   createdAt: BigInt!
   updatedAt: BigInt!
 }
@@ -208,32 +212,6 @@ type OpenInterestTotal @entity {
   shortPerp: BigInt!
   longSquart: BigInt!
   shortSquart: BigInt!
-  createdAt: BigInt!
-  updatedAt: BigInt!
-}
-
-# uniswap subgraph
-
-enum Interval {
-  HOURLY
-  DAILY
-}
-
-type AggregatedUniswapPriceEntity @entity {
-  id: ID! # address-interval-open
-  address: Bytes!
-  interval: Interval!
-  openTimestamp: BigInt!
-  closeTimestamp: BigInt!
-  openPrice: BigInt!
-  closePrice: BigInt!
-}
-
-type UniFeeGrowthHourly @entity {
-  id: ID! # address-yyyy-MM-dd
-  address: Bytes!
-  feeGrowthGlobal0X128: BigInt!
-  feeGrowthGlobal1X128: BigInt!
   createdAt: BigInt!
   updatedAt: BigInt!
 }

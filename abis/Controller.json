@@ -198,6 +198,12 @@
         "internalType": "bool",
         "name": "isMainVault",
         "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "pairGroupId",
+        "type": "uint256"
       }
     ],
     "name": "VaultCreated",
@@ -3118,55 +3124,5 @@
     "inputs": [],
     "name": "T",
     "type": "error"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "vaultId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "isolatedVaultId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "marginAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "IsolatedVaultClosed",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "vaultId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "isolatedVaultId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "marginAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "IsolatedVaultOpened",
-    "type": "event"
   }
 ]

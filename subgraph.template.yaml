@@ -27,7 +27,7 @@ dataSources:
           handler: handlePairGroupAdded
         - event: PairAdded(uint256,uint256,address)
           handler: handlePairAdded
-        - event: VaultCreated(uint256,address,bool)
+        - event: VaultCreated(uint256,address,bool,uint256)
           handler: handleVaultCreated
         - event: TokenSupplied(address,uint256,bool,uint256)
           handler: handleTokenSupplied
@@ -35,10 +35,6 @@ dataSources:
           handler: handleTokenWithdrawn
         - event: MarginUpdated(uint256,int256)
           handler: handleMarginUpdated
-        - event: IsolatedVaultOpened(uint256,uint256,uint256)
-          handler: handleIsolatedVaultOpened
-        - event: IsolatedVaultClosed(uint256,uint256,uint256)
-          handler: handleIsolatedVaultClosed
         - event: PositionUpdated(uint256,uint256,int256,int256,(int256,int256,int256,int256,int256,int256),int256)
           handler: handlePositionUpdated
         - event: PositionLiquidated(uint256,uint256,int256,int256,(int256,int256,int256,int256,int256,int256),int256)
@@ -57,10 +53,10 @@ dataSources:
           handler: handlePremiumGrowthUpdated
       file: ./src/Controller.ts
   - kind: ethereum/contract
-    name: WethGammaShortStrategy
+    name: GammaShortStrategy
     network: {{network}}
     source:
-      address: "{{WethGammaShortStrategy}}"
+      address: "{{GammaShortStrategy}}"
       abi: GammaShortStrategy
       startBlock: {{startBlock}}
     mapping:
@@ -73,8 +69,8 @@ dataSources:
         - name: GammaShortStrategy
           file: ./abis/GammaShortStrategy.json
       eventHandlers:
-        - event: DepositedToStrategy(indexed address,uint256,uint256)
+        - event: DepositedToStrategy(uint256,indexed address,uint256,uint256)
           handler: handleDepositedToStrategy
-        - event: WithdrawnFromStrategy(indexed address,uint256,uint256)
+        - event: WithdrawnFromStrategy(uint256,indexed address,uint256,uint256)
           handler: handleWithdrawnFromStrategy
       file: ./src/GammaShortStrategy.ts

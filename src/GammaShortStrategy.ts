@@ -2,7 +2,7 @@ import { BigInt } from '@graphprotocol/graph-ts'
 import {
   DepositedToStrategy,
   WithdrawnFromStrategy
-} from '../generated/WethGammaShortStrategy/GammaShortStrategy'
+} from '../generated/GammaShortStrategy/GammaShortStrategy'
 import { StrategyUserHistoryItem } from '../generated/schema'
 import { ensureStrategyUserPosition } from './helper'
 
@@ -11,7 +11,7 @@ export function handleDepositedToStrategy(event: DepositedToStrategy): void {
   const depositedAmount = event.params.depositedAmount
 
   const position = ensureStrategyUserPosition(
-    event.address,
+    event.params.strategyId,
     event.params.account,
     event.block.timestamp
   )
@@ -23,7 +23,7 @@ export function handleDepositedToStrategy(event: DepositedToStrategy): void {
 
   const entity = new StrategyUserHistoryItem(event.transaction.hash.toHex())
 
-  entity.address = event.address
+  entity.strategyId = event.params.strategyId
   entity.action = 'DEPOSIT'
   entity.account = event.params.account
   entity.strategyAmount = strategyAmount
@@ -42,7 +42,7 @@ export function handleWithdrawnFromStrategy(
   const withdrawnAmount = event.params.withdrawnAmount
 
   const position = ensureStrategyUserPosition(
-    event.address,
+    event.params.strategyId,
     event.params.account,
     event.block.timestamp
   )
@@ -59,7 +59,7 @@ export function handleWithdrawnFromStrategy(
 
   const entity = new StrategyUserHistoryItem(event.transaction.hash.toHex())
 
-  entity.address = event.address
+  entity.strategyId = event.params.strategyId
   entity.action = 'WITHDRAW'
   entity.account = event.params.account
   entity.strategyAmount = strategyAmount
