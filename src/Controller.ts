@@ -36,12 +36,13 @@ import {
   toRebalanceId,
   toVaultId
 } from './helper'
-import { ONE } from './constants'
+import { ONE, Q128 } from './constants'
 import {
   createLendingDepositHistory,
   createLendingWithdrawHistory
 } from './history'
 import { updateOpenInterest } from './OpenInterest'
+import { controllerContract } from './contracts'
 
 export function handleOperatorUpdated(event: OperatorUpdated): void { }
 
@@ -459,25 +460,23 @@ export function handlePremiumGrowthUpdated(event: PremiumGrowthUpdated): void {
 
   feeEntity.supplySqrtFee0 = feeEntity.supplySqrtInterest0
     .times(totalSupply)
-    .div(ONE)
+    .div(Q128)
   feeEntity.supplySqrtFee1 = feeEntity.supplySqrtInterest1
     .times(totalSupply)
-    .div(ONE)
+    .div(Q128)
   feeEntity.borrowSqrtFee0 = feeEntity.borrowSqrtInterest0
     .times(totalBorrow)
-    .div(ONE)
+    .div(Q128)
   feeEntity.borrowSqrtFee1 = feeEntity.borrowSqrtInterest1
     .times(totalBorrow)
-    .div(ONE)
+    .div(Q128)
 
-  feeEntity.supplySqrtInterest0Growth =
-    feeEntity.supplySqrtInterest0Growth.plus(feeEntity.supplySqrtInterest0)
-  feeEntity.supplySqrtInterest1Growth =
-    feeEntity.supplySqrtInterest1Growth.plus(feeEntity.supplySqrtInterest1)
-  feeEntity.borrowSqrtInterest0Growth =
-    feeEntity.borrowSqrtInterest0Growth.plus(feeEntity.borrowSqrtInterest0)
-  feeEntity.borrowSqrtInterest1Growth =
-    feeEntity.borrowSqrtInterest1Growth.plus(feeEntity.borrowSqrtInterest1)
+  const pair = controllerContract.getAsset(pairId)
+
+  feeEntity.supplySqrtInterest0Growth = pair.sqrtAssetStatus.fee0Growth
+  feeEntity.supplySqrtInterest1Growth = pair.sqrtAssetStatus.fee1Growth
+  feeEntity.borrowSqrtInterest0Growth = pair.sqrtAssetStatus.borrowPremium0Growth
+  feeEntity.borrowSqrtInterest1Growth = pair.sqrtAssetStatus.borrowPremium1Growth
 
   feeEntity.save()
 

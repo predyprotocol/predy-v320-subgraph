@@ -448,6 +448,11 @@
             "type": "uint256"
           },
           {
+            "internalType": "uint256",
+            "name": "pairGroupId",
+            "type": "uint256"
+          },
+          {
             "components": [
               {
                 "internalType": "address",
