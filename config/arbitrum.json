@@ -2,6 +2,5 @@
   "network": "arbitrum-one",
   "Controller": "0x06a61E55d4d4659b1A23C0F20AEdfc013C489829",
   "GammaShortStrategy": "0x247d8E00a2714665a5231f4AB165839d943C1838",
-  "startBlock": 107855425,
-  "strategyStartBlock": 104993986
+  "startBlock": 107855425
 }

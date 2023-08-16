@@ -11,5 +11,3 @@ export const controllerContract = Controller.bind(controllerAddress)
 export const GammaShortStrategyContract = GammaShortStrategy.bind(
   GammaShortStrategyAddress
 )
-
-export const StrategyStartBlock = {{ strategyStartBlock }}

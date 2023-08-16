@@ -7,14 +7,15 @@
     "build": "graph build",
     "fmt:fix": "prettier --write src/**/*",
     "prepare:arbitrum": "mustache config/arbitrum.json subgraph.template.yaml > subgraph.yaml && mustache config/arbitrum.json ./src/contracts.template.ts > ./src/contracts.ts",
-    "prepare-uni:arbitrum": "mustache config/arbitrum.json subgraph-uni.template.yaml > subgraph.yaml && mustache config/arbitrum.json ./src/contracts.template.ts > ./src/contracts.ts",
     "prepare:arbitrum-goerli": "mustache config/arbitrum-goerli.json subgraph.template.yaml > subgraph.yaml && mustache config/arbitrum-goerli.json ./src/contracts.template.ts > ./src/contracts.ts",
-    "prepare-uni:arbitrum-goerli": "mustache config/arbitrum-goerli.json subgraph-uni.template.yaml > subgraph.yaml && mustache config/arbitrum-goerli.json ./src/contracts.template.ts > ./src/contracts.ts",
+    "prepare:base": "mustache config/base.json subgraph.template.yaml > subgraph.yaml && mustache config/base.json ./src/contracts.template.ts > ./src/contracts.ts",
     "deploy:arbitrum": "graph deploy --product hosted-service predy-dev/predy-v4-arbitrum",
-    "deploy:arbitrum-goerli": "graph deploy --product hosted-service predy-dev/predy-v5-arbitrum-goerli"
+    "deploy:arbitrum-goerli": "graph deploy --product hosted-service predy-dev/predy-v5-arbitrum-goerli",
+    "deploy:studio:arbitrum": "graph deploy --studio predy-v5-subgraph",
+    "deploy:studio:base": "graph deploy --studio predy-v5-base-mainnet"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.36.1",
+    "@graphprotocol/graph-cli": "^0.55.0",
     "@graphprotocol/graph-ts": "0.29.0"
   },
   "devDependencies": {
