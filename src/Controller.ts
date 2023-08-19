@@ -435,6 +435,12 @@ export function handlePremiumGrowthUpdated(event: PremiumGrowthUpdated): void {
     event.transaction.hash,
     timestamp
   )
+  const totalFeeEntity = ensureFeeEntity(
+    event.address,
+    pairId,
+    Bytes.empty(),
+    timestamp
+  )
 
   const totalSupply = event.params.totalAmount
   const totalBorrow = event.params.borrowAmount
@@ -471,13 +477,24 @@ export function handlePremiumGrowthUpdated(event: PremiumGrowthUpdated): void {
     .times(totalBorrow)
     .div(Q128)
 
-  const pair = controllerContract.getAsset(pairId)
+  totalFeeEntity.supplySqrtInterest0Growth = totalFeeEntity.supplySqrtInterest0Growth.plus(
+    feeEntity.supplySqrtInterest0
+  )
+  totalFeeEntity.supplySqrtInterest1Growth = totalFeeEntity.supplySqrtInterest1Growth.plus(
+    feeEntity.supplySqrtInterest1
+  )
+  totalFeeEntity.borrowSqrtInterest0Growth = totalFeeEntity.borrowSqrtInterest0Growth.plus(
+    feeEntity.borrowSqrtInterest0
+  )
+  totalFeeEntity.borrowSqrtInterest1Growth = totalFeeEntity.borrowSqrtInterest1Growth.plus(
+    feeEntity.borrowSqrtInterest1
+  )
+  feeEntity.supplySqrtInterest0Growth = totalFeeEntity.supplySqrtInterest0Growth;
+  feeEntity.supplySqrtInterest1Growth = totalFeeEntity.supplySqrtInterest1Growth;
+  feeEntity.borrowSqrtInterest0Growth = totalFeeEntity.borrowSqrtInterest0Growth;
+  feeEntity.borrowSqrtInterest1Growth = totalFeeEntity.borrowSqrtInterest1Growth;
 
-  feeEntity.supplySqrtInterest0Growth = pair.sqrtAssetStatus.fee0Growth
-  feeEntity.supplySqrtInterest1Growth = pair.sqrtAssetStatus.fee1Growth
-  feeEntity.borrowSqrtInterest0Growth = pair.sqrtAssetStatus.borrowPremium0Growth
-  feeEntity.borrowSqrtInterest1Growth = pair.sqrtAssetStatus.borrowPremium1Growth
-
+  totalFeeEntity.save()
   feeEntity.save()
 
   const feeDaily = ensureFeeDaily(event.address, pairId, timestamp)
