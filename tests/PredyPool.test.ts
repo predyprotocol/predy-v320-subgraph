@@ -1,7 +1,8 @@
-import { BigInt } from '@graphprotocol/graph-ts'; //
+import { Address, BigInt } from '@graphprotocol/graph-ts'; //
 import { assert, beforeEach, clearStore, describe, test } from 'matchstick-as/assembly/index';
-import { handleFeeCollected, handlePositionUpdated, handleTokenSupplied, handleTokenWithdrawn } from '../src/Controller';
-import { createFeeCollectedEvent, createPositionUpdated, createTokenSuppliedEvent, createTokenWithdrawnEvent } from './utils';
+import { handlePositionUpdated, handleTokenSupplied, handleTokenWithdrawn } from '../src/PredyPool';
+import { createPerpTradedEvent, createPositionUpdated, createTokenSuppliedEvent, createTokenWithdrawnEvent } from './utils';
+import { handlePerpTraded } from '../src/PerpMarket';
 
 beforeEach(() => {
   clearStore() // <-- clear the store before each test in the file
@@ -30,18 +31,6 @@ describe("handlePositionUpdated", () => {
     assert.fieldEquals('OpenPositionEntity', '0x0000000000000000000000000000000000000000-1-2', 'tradeAmount', '0')
 
     assert.entityCount('TradeHistoryItem', 1)
-
-  })
-})
-
-describe("handleFeeCollected", () => {
-  test('fee collected', () => {
-    const feeCollectedEvent = createFeeCollectedEvent(BigInt.fromI32(1), BigInt.fromI32(2), BigInt.fromI32(10))
-
-    handleFeeCollected(feeCollectedEvent)
-
-    assert.entityCount('OpenPositionEntity', 1)
-    assert.fieldEquals('OpenPositionEntity', '0x0000000000000000000000000000000000000000-1-2', 'feeAmount', '10')
   })
 })
 
@@ -66,6 +55,27 @@ describe("handleTokenWithdrawn", () => {
     handleTokenWithdrawn(tokenWithdrawnEvent)
 
     const id = `${tokenWithdrawnEvent.transaction.hash.toHex()}-${tokenWithdrawnEvent.logIndex.toString()}`
+
+    assert.entityCount('LendingUserHistoryItem', 1)
+    assert.fieldEquals('LendingUserHistoryItem', id, 'assetId', '1')
+    assert.fieldEquals('LendingUserHistoryItem', id, 'assetAmount', '10')
+  })
+})
+
+describe("handlePerpTraded", () => {
+  test('check history', () => {
+    const tradedEvent = createPerpTradedEvent(
+      Address.zero(),
+      BigInt.fromI32(1),
+      BigInt.fromI32(10),
+      BigInt.fromI32(0),
+      BigInt.fromI32(0),
+      BigInt.fromI32(0)
+    )
+
+    handlePerpTraded(tradedEvent)
+
+    const id = `${tradedEvent.transaction.hash.toHex()}-${tradedEvent.logIndex.toString()}`
 
     assert.entityCount('LendingUserHistoryItem', 1)
     assert.fieldEquals('LendingUserHistoryItem', id, 'assetId', '1')

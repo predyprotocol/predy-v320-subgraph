@@ -3,11 +3,11 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: Controller
+    name: PredyPool
     network: {{network}}
     source:
-      address: "{{Controller}}"
-      abi: Controller
+      address: "{{PredyPool}}"
+      abi: PredyPool
       startBlock: {{startBlock}}
     mapping:
       kind: ethereum/events
@@ -18,59 +18,127 @@ dataSources:
         - AssetEntity
         - VaultEntity
       abis:
-        - name: Controller
-          file: ./abis/Controller.json
+        - name: PredyPool
+          file: ./abis/PredyPool.json
       eventHandlers:
         - event: OperatorUpdated(address)
           handler: handleOperatorUpdated
-        - event: PairGroupAdded(uint256,address)
-          handler: handlePairGroupAdded
-        - event: PairAdded(uint256,uint256,address)
+        - event: PairAdded(uint256,address,address)
           handler: handlePairAdded
-        - event: VaultCreated(uint256,address,bool,uint256)
+        - event: VaultCreated(uint256,address,address,uint256)
           handler: handleVaultCreated
-        - event: TokenSupplied(address,uint256,bool,uint256)
+        - event: TokenSupplied(indexed address,uint256,bool,uint256)
           handler: handleTokenSupplied
-        - event: TokenWithdrawn(address,uint256,bool,uint256)
+        - event: TokenWithdrawn(indexed address,uint256,bool,uint256)
           handler: handleTokenWithdrawn
         - event: MarginUpdated(uint256,int256)
           handler: handleMarginUpdated
-        - event: PositionUpdated(uint256,uint256,int256,int256,(int256,int256,int256,int256,int256,int256),int256)
+        - event: PositionUpdated(indexed uint256,uint256,int256,int256,(int256,int256,int256,int256,int256,int256),int256)
           handler: handlePositionUpdated
-        - event: PositionLiquidated(uint256,uint256,int256,int256,(int256,int256,int256,int256,int256,int256),int256)
+        - event: PositionLiquidated(indexed uint256,uint256,int256,int256,(int256,int256,int256,int256,int256,int256),int256)
           handler: handlePositionLiquidated
-        - event: VaultLiquidated(uint256,uint256,uint256,address,int256)
-          handler: handleVaultLiquidated
-        - event: ScaledAssetPositionUpdated(uint256,bool,int256,int256)
+        - event: ScaledAssetPositionUpdated(indexed uint256,bool,int256,int256)
           handler: handleScaledAssetPositionUpdated
-        - event: SqrtPositionUpdated(uint256,int256,int256)
+        - event: SqrtPositionUpdated(indexed uint256,int256,int256)
           handler: handleSqrtPositionUpdated
-        - event: Rebalanced(uint256,int24,int24,int256)
+        - event: Rebalanced(indexed uint256,bool,int24,int24,int256,int256)
           handler: handleRebalanced
-        - event: InterestGrowthUpdated(uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256,uint256,uint256),uint256,uint256)
+        - event: InterestGrowthUpdated(indexed uint256,(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256,uint256,uint256),uint256,uint256)
           handler: handleInterestGrowthUpdated
-        - event: PremiumGrowthUpdated(uint256,uint256,uint256,uint256,uint256,uint256)
+        - event: PremiumGrowthUpdated(indexed uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handlePremiumGrowthUpdated
-      file: ./src/Controller.ts
+      file: ./src/PredyPool.ts
   - kind: ethereum/contract
-    name: GammaShortStrategy
+    name: PerpMarket
     network: {{network}}
     source:
-      address: "{{GammaShortStrategy}}"
-      abi: GammaShortStrategy
+      address: "{{PerpMarket}}"
+      abi: PerpMarket
       startBlock: {{startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
-        - StrategyUserHistoryItem
+        - PerpTradeHistoryItem
       abis:
-        - name: GammaShortStrategy
-          file: ./abis/GammaShortStrategy.json
+        - name: PerpMarket
+          file: ./abis/PerpMarket.json
       eventHandlers:
-        - event: DepositedToStrategy(uint256,indexed address,uint256,uint256)
-          handler: handleDepositedToStrategy
-        - event: WithdrawnFromStrategy(uint256,indexed address,uint256,uint256)
-          handler: handleWithdrawnFromStrategy
-      file: ./src/GammaShortStrategy.ts
+        - event: PerpClosedByTPSLOrder(indexed address,uint256,int256,(int256,int256,int256,int256,int256,int256),int256,uint256)
+          handler: handlePerpClosedByTPSLOrder
+        - event: PerpTPSLOrderUpdated(indexed address,uint256,uint256,uint256)
+          handler: handlePerpTPSLOrderUpdated
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: PerpTraded(indexed address,uint256,uint256,int256,(int256,int256,int256,int256,int256,int256),int256,int256)
+          handler: handlePerpTraded
+      file: ./src/PerpMarket.ts
+  - kind: ethereum/contract
+    name: PredictMarket
+    network: {{network}}
+    source:
+      address: "{{PredictMarket}}"
+      abi: PredictMarket
+      startBlock: {{startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - PredictTradeHistoryItem
+      abis:
+        - name: PredictMarket
+          file: ./abis/PredictMarket.json
+      eventHandlers:
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: PredictPositionOpened(indexed uint256,address,uint256,uint256,(int256,int256,int256,int256,int256,int256),uint256,uint256)
+          handler: handlePredictPositionOpened
+        - event: PredictPositionClosed(uint256,uint256,(int256,int256,int256,int256,int256,int256),int256)
+          handler: handlePredictPositionClosed
+      file: ./src/PredictMarket.ts
+  - kind: ethereum/contract
+    name: SpotMarket
+    network: {{network}}
+    source:
+      address: "{{SpotMarket}}"
+      abi: SpotMarket
+      startBlock: {{startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - SpotTradeHistoryItem
+      abis:
+        - name: SpotMarket
+          file: ./abis/SpotMarket.json
+      eventHandlers:
+        - event: SpotTraded(indexed address,address,address,address,int256,int256,address)
+          handler: handleSpotTraded
+      file: ./src/SpotMarket.ts
+  - kind: ethereum/contract
+    name: GammaTradeMarket
+    network: {{network}}
+    source:
+      address: "{{GammaTradeMarket}}"
+      abi: GammaTradeMarket
+      startBlock: {{startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - GammaTradeHistoryItem
+      abis:
+        - name: GammaTradeMarket
+          file: ./abis/GammaTradeMarket.json
+      eventHandlers:
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: GammaPositionTraded(indexed address,uint256,uint256,uint256,uint256,(int256,int256,int256,int256,int256,int256),int256,int256)
+          handler: handleGammaPositionTraded
+        - event: GammaPositionHedged(indexed address,uint256,uint256,uint256,int256,(int256,int256,int256,int256,int256,int256),int256)
+          handler: handleGammaPositionHedged
+      file: ./src/GammaTradeMarket.ts

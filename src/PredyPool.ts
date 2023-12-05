@@ -4,7 +4,6 @@ import {
   MarginUpdated,
   OperatorUpdated,
   PairAdded,
-  PairGroupAdded,
   PositionLiquidated,
   PositionUpdated,
   PositionUpdatedPayoffStruct,
@@ -14,9 +13,8 @@ import {
   SqrtPositionUpdated,
   TokenSupplied,
   TokenWithdrawn,
-  VaultCreated,
-  VaultLiquidated
-} from '../generated/Controller/Controller'
+  VaultCreated
+} from '../generated/PredyPool/PredyPool'
 import {
   RebalanceHistoryItem,
   TradeHistoryItem,
@@ -30,8 +28,6 @@ import {
   ensureFeeEntity,
   ensureOpenPosition,
   ensurePairEntity,
-  ensurePairGroupEntity,
-  toPairGroupId,
   toPairId,
   toRebalanceId,
   toVaultId
@@ -44,30 +40,14 @@ import {
 import { updateOpenInterest } from './OpenInterest'
 import { controllerContract } from './contracts'
 
-export function handleOperatorUpdated(event: OperatorUpdated): void { }
-
-export function handlePairGroupAdded(event: PairGroupAdded): void {
-  const pairGroup = ensurePairGroupEntity(
-    event.params.id,
-    event.block.timestamp
-  )
-
-  pairGroup.stableTokenAddress = event.params.stableAsset
-
-  pairGroup.save()
-}
+export function handleOperatorUpdated(event: OperatorUpdated): void {}
 
 export function handlePairAdded(event: PairAdded): void {
-  const pairGroup = ensurePairGroupEntity(
-    event.params.pairGroupId,
-    event.block.timestamp
-  )
-
   const pair = ensurePairEntity(event.params.pairId, event.block.timestamp)
 
-  pair.pairGroup = pairGroup.id
+  pair.marginId = event.params.marginId
   pair.pairId = event.params.pairId
-  pair.uniswapPool = event.params._uniswapPool
+  pair.uniswapPool = event.params.uniswapPool
 
   pair.save()
 }
@@ -75,11 +55,10 @@ export function handlePairAdded(event: PairAdded): void {
 export function handleVaultCreated(event: VaultCreated): void {
   const vault = new VaultEntity(toVaultId(event.params.vaultId))
 
-  vault.pairGroup = toPairGroupId(event.params.pairGroupId)
+  vault.marginId = event.params.marginId
   vault.vaultId = event.params.vaultId
   vault.owner = event.params.owner
   vault.margin = BigInt.zero()
-  vault.isMainVault = event.params.isMainVault
   vault.isClosed = false
 
   vault.save()
@@ -126,7 +105,7 @@ export function handleMarginUpdated(event: MarginUpdated): void {
     return
   }
 
-  vault.margin = vault.margin.plus(event.params.marginAmount)
+  vault.margin = vault.margin.plus(event.params.updateMarginAmount)
 
   if (!vault.isMainVault && vault.margin.equals(BigInt.zero())) {
     vault.isClosed = true
@@ -137,23 +116,7 @@ export function handleMarginUpdated(event: MarginUpdated): void {
   createMarginHistory(
     event.transaction.hash.toHex(),
     event.params.vaultId,
-    event.params.marginAmount,
-    event.block.timestamp
-  )
-}
-
-export function handleVaultLiquidated(event: VaultLiquidated): void {
-  closeVault(
-    event.transaction.hash,
-    event.params.mainVaultId,
-    event.params.vaultId,
-    event.params.withdrawnMarginAmount,
-    event.block.timestamp
-  )
-  createLiquidationHistory(
-    event.transaction.hash.toHex(),
-    event.params.vaultId,
-    event.params.totalPenaltyAmount,
+    event.params.updateMarginAmount,
     event.block.timestamp
   )
 }
@@ -289,11 +252,11 @@ function updatePosition(
   if (!tradeAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-      '-' +
-      logIndex.toString() +
-      '-' +
-      vaultId.toString() +
-      '-perp'
+        '-' +
+        logIndex.toString() +
+        '-' +
+        vaultId.toString() +
+        '-perp'
     )
 
     historyItem.vault = toVaultId(vaultId)
@@ -312,11 +275,11 @@ function updatePosition(
   if (!tradeSqrtAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-      '-' +
-      logIndex.toString() +
-      '-' +
-      vaultId.toString() +
-      '-sqrt'
+        '-' +
+        logIndex.toString() +
+        '-' +
+        vaultId.toString() +
+        '-sqrt'
     )
 
     historyItem.vault = toVaultId(vaultId)
@@ -341,7 +304,7 @@ export function handleRebalanced(event: Rebalanced): void {
   item.pair = toPairId(event.params.pairId)
   item.tickLower = BigInt.fromI32(event.params.tickLower)
   item.tickUpper = BigInt.fromI32(event.params.tickUpper)
-  item.profit = event.params.profit
+  // TODO: deltaPositionAmount
   item.createdAt = event.block.timestamp
 
   item.save()
@@ -349,9 +312,9 @@ export function handleRebalanced(event: Rebalanced): void {
 
 export function handleScaledAssetPositionUpdated(
   event: ScaledAssetPositionUpdated
-): void { }
+): void {}
 
-export function handleSqrtPositionUpdated(event: SqrtPositionUpdated): void { }
+export function handleSqrtPositionUpdated(event: SqrtPositionUpdated): void {}
 
 export function handleInterestGrowthUpdated(
   event: InterestGrowthUpdated
@@ -477,22 +440,18 @@ export function handlePremiumGrowthUpdated(event: PremiumGrowthUpdated): void {
     .times(totalBorrow)
     .div(Q128)
 
-  totalFeeEntity.supplySqrtInterest0Growth = totalFeeEntity.supplySqrtInterest0Growth.plus(
-    feeEntity.supplySqrtInterest0
-  )
-  totalFeeEntity.supplySqrtInterest1Growth = totalFeeEntity.supplySqrtInterest1Growth.plus(
-    feeEntity.supplySqrtInterest1
-  )
-  totalFeeEntity.borrowSqrtInterest0Growth = totalFeeEntity.borrowSqrtInterest0Growth.plus(
-    feeEntity.borrowSqrtInterest0
-  )
-  totalFeeEntity.borrowSqrtInterest1Growth = totalFeeEntity.borrowSqrtInterest1Growth.plus(
-    feeEntity.borrowSqrtInterest1
-  )
-  feeEntity.supplySqrtInterest0Growth = totalFeeEntity.supplySqrtInterest0Growth;
-  feeEntity.supplySqrtInterest1Growth = totalFeeEntity.supplySqrtInterest1Growth;
-  feeEntity.borrowSqrtInterest0Growth = totalFeeEntity.borrowSqrtInterest0Growth;
-  feeEntity.borrowSqrtInterest1Growth = totalFeeEntity.borrowSqrtInterest1Growth;
+  totalFeeEntity.supplySqrtInterest0Growth =
+    totalFeeEntity.supplySqrtInterest0Growth.plus(feeEntity.supplySqrtInterest0)
+  totalFeeEntity.supplySqrtInterest1Growth =
+    totalFeeEntity.supplySqrtInterest1Growth.plus(feeEntity.supplySqrtInterest1)
+  totalFeeEntity.borrowSqrtInterest0Growth =
+    totalFeeEntity.borrowSqrtInterest0Growth.plus(feeEntity.borrowSqrtInterest0)
+  totalFeeEntity.borrowSqrtInterest1Growth =
+    totalFeeEntity.borrowSqrtInterest1Growth.plus(feeEntity.borrowSqrtInterest1)
+  feeEntity.supplySqrtInterest0Growth = totalFeeEntity.supplySqrtInterest0Growth
+  feeEntity.supplySqrtInterest1Growth = totalFeeEntity.supplySqrtInterest1Growth
+  feeEntity.borrowSqrtInterest0Growth = totalFeeEntity.borrowSqrtInterest0Growth
+  feeEntity.borrowSqrtInterest1Growth = totalFeeEntity.borrowSqrtInterest1Growth
 
   totalFeeEntity.save()
   feeEntity.save()

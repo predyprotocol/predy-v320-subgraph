@@ -7,29 +7,10 @@ import {
   OpenInterestTotal,
   OpenPositionEntity,
   PairEntity,
-  PairGroupEntity,
-  StrategyUserPosition,
   TokenEntity,
   TradeHistoryItem
 } from '../generated/schema'
-import { Rebalanced } from '../generated/Controller/Controller'
-
-export function ensurePairGroupEntity(
-  pairGroupId: BigInt,
-  eventTime: BigInt
-): PairGroupEntity {
-  const id = toPairGroupId(pairGroupId)
-  let entity = PairGroupEntity.load(id)
-
-  if (entity == null) {
-    entity = new PairGroupEntity(id)
-    entity.createdAt = eventTime
-  }
-
-  entity.updatedAt = eventTime
-
-  return entity
-}
+import { Rebalanced } from '../generated/PredyPool/PredyPool'
 
 export function ensurePairEntity(
   pairId: BigInt,
@@ -88,7 +69,6 @@ export function ensureOpenPosition(
     openPosition = new OpenPositionEntity(id)
     openPosition.pair = toPairId(pairId)
     openPosition.createdAt = eventTime
-    openPosition.vault = toVaultId(vaultId)
     openPosition.tradeAmount = BigInt.zero()
     openPosition.sqrtTradeAmount = BigInt.zero()
     openPosition.entryValue = BigInt.zero()
@@ -302,32 +282,6 @@ export function ensureFeeDaily(
   entity.updatedAt = eventTime
 
   return entity
-}
-
-export function ensureStrategyUserPosition(
-  strategyId: BigInt,
-  account: Bytes,
-  eventTime: BigInt
-): StrategyUserPosition {
-  const id = toStrategyUserPositionId(strategyId, account)
-  let entity = StrategyUserPosition.load(id)
-
-  if (entity == null) {
-    entity = new StrategyUserPosition(id)
-    entity.strategyId = strategyId
-    entity.account = account
-    entity.entryValue = BigInt.zero()
-    entity.strategyAmount = BigInt.zero()
-    entity.createdAt = eventTime
-  }
-
-  entity.updatedAt = eventTime
-
-  return entity
-}
-
-export function toPairGroupId(pairGroupId: BigInt): string {
-  return pairGroupId.toString()
 }
 
 export function toPairId(pairId: BigInt): string {
