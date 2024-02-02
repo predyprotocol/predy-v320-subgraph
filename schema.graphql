@@ -153,7 +153,6 @@ type RebalanceHistoryItem @entity {
   pair: PairEntity!
   tickLower: BigInt!
   tickUpper: BigInt!
-  profit: BigInt!
   createdAt: BigInt!
 }
 

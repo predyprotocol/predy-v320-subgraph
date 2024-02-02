@@ -2,6 +2,7 @@ import { ethereum, BigInt, Address, Bytes, ByteArray } from "@graphprotocol/grap
 import { newMockEvent } from "matchstick-as/assembly/index"
 import { PositionUpdated, TokenSupplied, TokenWithdrawn, VaultCreated } from "../generated/PredyPool/PredyPool"
 import { PerpTraded } from "../generated/PerpMarket/PerpMarket"
+import { SpotTraded } from "../generated/SpotMarket/SpotMarket"
 
 export function createPositionUpdated(vaultId: BigInt, assetId: BigInt, tradeAmount: BigInt, tradeSqrtAmount: BigInt, fee: BigInt): PositionUpdated {
   let positionUpdatedEvent = changetype<PositionUpdated>(newMockEvent())
@@ -132,6 +133,36 @@ export function createPerpTradedEvent(
   event.parameters.push(payoffParam)
   event.parameters.push(feeParam)
   event.parameters.push(marginAmountParam)
+
+  return event
+}
+
+export function createSpotTradedEvent(
+  trader: Address,
+  filler: Address,
+  baseToken: Address,
+  quoteToken: Address,
+  baseAmount: BigInt,
+  quoteAmount: BigInt,
+  validatorAddress: Address
+): SpotTraded {
+  let event = changetype<SpotTraded>(newMockEvent())
+
+  let traderParam = new ethereum.EventParam("trader", ethereum.Value.fromAddress(trader))
+  let fillerParam = new ethereum.EventParam("filler", ethereum.Value.fromAddress(filler))
+  let baseTokenParam = new ethereum.EventParam("baseToken", ethereum.Value.fromAddress(baseToken))
+  let quoteTokenParam = new ethereum.EventParam("quoteToken", ethereum.Value.fromAddress(quoteToken))
+  let baseAmountParam = new ethereum.EventParam("baseAmount", ethereum.Value.fromUnsignedBigInt(baseAmount))
+  let quoteAmountParam = new ethereum.EventParam("quoteAmount", ethereum.Value.fromUnsignedBigInt(quoteAmount))
+  let validatorAddressParam = new ethereum.EventParam("validatorAddress", ethereum.Value.fromAddress(validatorAddress))
+
+  event.parameters.push(traderParam)
+  event.parameters.push(fillerParam)
+  event.parameters.push(baseTokenParam)
+  event.parameters.push(quoteTokenParam)
+  event.parameters.push(baseAmountParam)
+  event.parameters.push(quoteAmountParam)
+  event.parameters.push(validatorAddressParam)
 
   return event
 }

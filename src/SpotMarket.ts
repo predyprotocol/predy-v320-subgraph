@@ -2,7 +2,7 @@ import { SpotTraded } from '../generated/SpotMarket/SpotMarket'
 import { SpotTradeHistoryItem } from '../generated/schema'
 
 export function handleSpotTraded(event: SpotTraded): void {
-  const id = event.transaction.hash.toHex() + '/' + event.logIndex.toString()
+  const id = event.transaction.hash.toHex() + '-' + event.logIndex.toString()
 
   let historyItem = SpotTradeHistoryItem.load(id)
 
@@ -11,6 +11,7 @@ export function handleSpotTraded(event: SpotTraded): void {
 
     historyItem.txHash = event.transaction.hash
     historyItem.trader = event.params.trader
+    historyItem.filler = event.params.filler
     historyItem.baseToken = event.params.baseToken
     historyItem.quoteToken = event.params.quoteToken
     historyItem.baseAmount = event.params.baseAmount
