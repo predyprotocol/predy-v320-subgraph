@@ -9,6 +9,7 @@ import {
   PositionUpdatedPayoffStruct,
   PremiumGrowthUpdated,
   Rebalanced,
+  RecepientUpdated,
   ScaledAssetPositionUpdated,
   SqrtPositionUpdated,
   TokenSupplied,
@@ -22,7 +23,6 @@ import {
 } from '../generated/schema'
 import {
   createFeeHistory,
-  createLiquidationHistory,
   createMarginHistory,
   ensureFeeDaily,
   ensureFeeEntity,
@@ -38,7 +38,8 @@ import {
   createLendingWithdrawHistory
 } from './history'
 import { updateOpenInterest } from './OpenInterest'
-import { controllerContract } from './contracts'
+import { perpMarketAddress } from './contracts'
+import { createPerpLiquidationHistory } from './perpHistory'
 
 export function handleOperatorUpdated(event: OperatorUpdated): void {}
 
@@ -98,6 +99,14 @@ export function handleTokenWithdrawn(event: TokenWithdrawn): void {
   )
 }
 
+export function handleRecepientUpdated(event: RecepientUpdated): void {
+  const vault = new VaultEntity(toVaultId(event.params.vaultId))
+
+  vault.recipient = event.params.recipient
+
+  vault.save()
+}
+
 export function handleMarginUpdated(event: MarginUpdated): void {
   const vault = VaultEntity.load(toVaultId(event.params.vaultId))
 
@@ -105,9 +114,9 @@ export function handleMarginUpdated(event: MarginUpdated): void {
     return
   }
 
-  vault.margin = vault.margin.plus(event.params.updateMarginAmount)
+  vault.margin = vault.margin.plus(event.params.updatedMarginAmount)
 
-  if (!vault.isMainVault && vault.margin.equals(BigInt.zero())) {
+  if (vault.margin.equals(BigInt.zero())) {
     vault.isClosed = true
   }
 
@@ -116,40 +125,8 @@ export function handleMarginUpdated(event: MarginUpdated): void {
   createMarginHistory(
     event.transaction.hash.toHex(),
     event.params.vaultId,
-    event.params.updateMarginAmount,
+    event.params.updatedMarginAmount,
     event.block.timestamp
-  )
-}
-
-function closeVault(
-  txHash: Bytes,
-  vaultId: BigInt,
-  isolatedVaultId: BigInt,
-  marginAmount: BigInt,
-  timestamp: BigInt
-): void {
-  const vault = VaultEntity.load(toVaultId(vaultId))
-  const isolatedVault = VaultEntity.load(toVaultId(isolatedVaultId))
-
-  if (!vault || !isolatedVault) {
-    return
-  }
-
-  vault.margin = vault.margin.plus(marginAmount)
-  isolatedVault.margin = isolatedVault.margin.minus(marginAmount)
-  if (!vaultId.equals(isolatedVaultId)) {
-    isolatedVault.isClosed = true
-  }
-
-  vault.save()
-  isolatedVault.save()
-
-  createMarginHistory(txHash.toHex(), vaultId, marginAmount, timestamp)
-  createMarginHistory(
-    txHash.toHex(),
-    isolatedVaultId,
-    marginAmount.neg(),
-    timestamp
   )
 }
 
@@ -185,6 +162,24 @@ export function handlePositionLiquidated(event: PositionLiquidated): void {
     event.params.fee,
     event.block.timestamp
   )
+
+  const vault = VaultEntity.load(toVaultId(event.params.vaultId))
+
+  if (vault && vault.owner.equals(perpMarketAddress)) {
+    createPerpLiquidationHistory(
+      event.transaction.hash,
+      event.logIndex,
+      vault.recipient,
+      event.params.pairId,
+      event.params.vaultId,
+      event.params.tradeAmount,
+      payoff.perpEntryUpdate,
+      payoff.perpPayoff,
+      event.params.marginAmount,
+      event.params.fee,
+      event.block.timestamp
+    )
+  }
 }
 
 function updatePosition(

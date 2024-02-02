@@ -1,6 +1,5 @@
 import { BigInt, Bytes } from '@graphprotocol/graph-ts'
 import { LendingUserHistoryItem } from '../generated/schema'
-import { toPairId } from './helper'
 
 export function createLendingDepositHistory(
   contractAddress: Bytes,

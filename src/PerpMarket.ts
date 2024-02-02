@@ -7,6 +7,7 @@ import {
 } from '../generated/PerpMarket/PerpMarket'
 import { PerpTradeHistoryItem } from '../generated/schema'
 import { toPairId, toVaultId } from './helper'
+import { createPerpTradeHistory } from './perpHistory'
 
 export function handlePerpClosedByTPSLOrder(
   event: PerpClosedByTPSLOrder
@@ -25,6 +26,7 @@ export function handlePerpClosedByTPSLOrder(
     payoff.push(event.params.payoff[i])
   }
 
+  item.txHash = event.transaction.hash
   item.trader = event.params.trader
   item.pair = toPairId(event.params.pairId)
   item.size = event.params.tradeAmount
@@ -38,37 +40,31 @@ export function handlePerpClosedByTPSLOrder(
 }
 
 export function handleOwnershipTransferred(event: OwnershipTransferred): void {
-  // イベントデータを処理するロジック
+  // TODO:
 }
 
 export function handlePerpTPSLOrderUpdated(event: PerpTPSLOrderUpdated): void {
-  // イベントデータを処理するロジック
+  // TODO:
 }
 
 export function handlePerpTraded(event: PerpTraded): void {
-  const id = event.transaction.hash.toHex() + '/' + event.logIndex.toString()
-
-  let item = PerpTradeHistoryItem.load(id)
-
-  if (item === null) {
-    item = new PerpTradeHistoryItem(id)
-  }
-
   const payoff = new PerpTradedPayoffStruct()
 
   for (let i = 0; i < 6; i++) {
     payoff.push(event.params.payoff[i])
   }
 
-  item.trader = event.params.trader
-  item.pair = toPairId(event.params.pairId)
-  item.vault = toVaultId(event.params.vaultId)
-  item.size = event.params.tradeAmount
-  item.entryValue = payoff.perpEntryUpdate
-  item.payoff = payoff.perpPayoff
-  item.margin = event.params.marginAmount
-  item.fee = event.params.fee
-  item.createdAt = event.block.timestamp
-
-  item.save()
+  createPerpTradeHistory(
+    event.transaction.hash,
+    event.logIndex,
+    event.params.trader,
+    event.params.pairId,
+    event.params.vaultId,
+    event.params.tradeAmount,
+    payoff.perpEntryUpdate,
+    payoff.perpPayoff,
+    event.params.marginAmount,
+    event.params.fee,
+    event.block.timestamp
+  )
 }

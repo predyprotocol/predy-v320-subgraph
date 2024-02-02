@@ -1,7 +1,7 @@
 import { ethereum, BigInt, Address, Bytes, ByteArray } from "@graphprotocol/graph-ts"
 import { newMockEvent } from "matchstick-as/assembly/index"
 import { PositionUpdated, TokenSupplied, TokenWithdrawn } from "../generated/PredyPool/PredyPool"
-import { ClosedByTPSLOrder, OpenTPSLOrder, PerpTraded } from "../generated/PerpMarket/PerpMarket"
+import { PerpTraded } from "../generated/PerpMarket/PerpMarket"
 
 export function createPositionUpdated(vaultId: BigInt, assetId: BigInt, tradeAmount: BigInt, tradeSqrtAmount: BigInt, fee: BigInt): PositionUpdated {
   let positionUpdatedEvent = changetype<PositionUpdated>(newMockEvent())
@@ -41,11 +41,13 @@ export function createTokenSuppliedEvent(assetId: BigInt, suppliedAmount: BigInt
   tokenSuppliedEvent.parameters = new Array()
 
   let accountParam = new ethereum.EventParam("account", ethereum.Value.fromAddress(Address.zero()))
-  let assetIdParam = new ethereum.EventParam("assetId", ethereum.Value.fromUnsignedBigInt(assetId))
+  let assetIdParam = new ethereum.EventParam("pairId", ethereum.Value.fromUnsignedBigInt(assetId))
+  let isQuoteParam = new ethereum.EventParam("isStable", ethereum.Value.fromBoolean(true))
   let suppliedAmountParam = new ethereum.EventParam("suppliedAmount", ethereum.Value.fromUnsignedBigInt(suppliedAmount))
 
   tokenSuppliedEvent.parameters.push(accountParam)
   tokenSuppliedEvent.parameters.push(assetIdParam)
+  tokenSuppliedEvent.parameters.push(isQuoteParam)
   tokenSuppliedEvent.parameters.push(suppliedAmountParam)
 
   return tokenSuppliedEvent
@@ -59,11 +61,13 @@ export function createTokenWithdrawnEvent(assetId: BigInt, finalWithdrawnAmount:
   tokenWithdrawnEvent.parameters = new Array()
 
   let accountParam = new ethereum.EventParam("account", ethereum.Value.fromAddress(Address.zero()))
-  let assetIdParam = new ethereum.EventParam("assetId", ethereum.Value.fromUnsignedBigInt(assetId))
+  let assetIdParam = new ethereum.EventParam("pairId", ethereum.Value.fromUnsignedBigInt(assetId))
+  let isQuoteParam = new ethereum.EventParam("isStable", ethereum.Value.fromBoolean(true))
   let finalWithdrawnAmountParam = new ethereum.EventParam("finalWithdrawnAmount", ethereum.Value.fromUnsignedBigInt(finalWithdrawnAmount))
 
   tokenWithdrawnEvent.parameters.push(accountParam)
   tokenWithdrawnEvent.parameters.push(assetIdParam)
+  tokenWithdrawnEvent.parameters.push(isQuoteParam)
   tokenWithdrawnEvent.parameters.push(finalWithdrawnAmountParam)
 
   return tokenWithdrawnEvent
@@ -84,7 +88,7 @@ export function createPerpTradedEvent(
   let vaultIdParam = new ethereum.EventParam("vaultId", ethereum.Value.fromUnsignedBigInt(vaultId))
   let tradeAmountParam = new ethereum.EventParam("tradeAmount", ethereum.Value.fromSignedBigInt(tradeAmount))
 
-  // Payoff構造体の構築
+  // Makes Payoff struct
   const payoffParamValues = new ethereum.Tuple()
   payoffParamValues.push(ethereum.Value.fromSignedBigInt(BigInt.zero()))
   payoffParamValues.push(ethereum.Value.fromSignedBigInt(BigInt.zero()))
@@ -104,44 +108,6 @@ export function createPerpTradedEvent(
   event.parameters.push(payoffParam)
   event.parameters.push(feeParam)
   event.parameters.push(marginAmountParam)
-
-  return event
-}
-
-export function createClosedByTPSLOrderEvent(/* Params */): ClosedByTPSLOrder {
-  let event = changetype<ClosedByTPSLOrder>(newMockEvent())
-
-  let traderParam = new ethereum.EventParam("trader", ethereum.Value.fromSignedBigInt(BigInt.zero()))
-  let vaultIdParam = new ethereum.EventParam("vaultId", ethereum.Value.fromUnsignedBigInt(BigInt.zero()))
-
-  const payoffParamValues = new ethereum.Tuple()
-  payoffParamValues.push(ethereum.Value.fromSignedBigInt(BigInt.zero()))
-  payoffParamValues.push(ethereum.Value.fromSignedBigInt(BigInt.zero()))
-  payoffParamValues.push(ethereum.Value.fromSignedBigInt(BigInt.zero()))
-  payoffParamValues.push(ethereum.Value.fromSignedBigInt(BigInt.zero()))
-  payoffParamValues.push(ethereum.Value.fromSignedBigInt(BigInt.zero()))
-
-  let payoffParam = new ethereum.EventParam("payoff", ethereum.Value.fromTuple(payoffParamValues))
-  let feeParam = new ethereum.EventParam("fee", ethereum.Value.fromSignedBigInt(BigInt.zero()))
-
-  event.parameters.push(traderParam)
-  event.parameters.push(vaultIdParam)
-  event.parameters.push(payoffParam)
-  event.parameters.push(feeParam)
-
-  return event
-}
-
-export function createOpenTPSLOrderEvent(): OpenTPSLOrder {
-  let event = changetype<OpenTPSLOrder>(newMockEvent())
-
-  let vaultIdParam = new ethereum.EventParam("vaultId", ethereum.Value.fromUnsignedBigInt(BigInt.zero()))
-  let takeProfitPriceParam = new ethereum.EventParam("takeProfitPrice", ethereum.Value.fromUnsignedBigInt(BigInt.zero()))
-  let stopLossPriceParam = new ethereum.EventParam("stopLossPrice", ethereum.Value.fromUnsignedBigInt(BigInt.zero()))
-
-  event.parameters.push(vaultIdParam)
-  event.parameters.push(takeProfitPriceParam)
-  event.parameters.push(stopLossPriceParam)
 
   return event
 }

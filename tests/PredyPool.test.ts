@@ -1,8 +1,7 @@
-import { Address, BigInt } from '@graphprotocol/graph-ts'; //
+import { BigInt } from '@graphprotocol/graph-ts'; //
 import { assert, beforeEach, clearStore, describe, test } from 'matchstick-as/assembly/index';
 import { handlePositionUpdated, handleTokenSupplied, handleTokenWithdrawn } from '../src/PredyPool';
-import { createPerpTradedEvent, createPositionUpdated, createTokenSuppliedEvent, createTokenWithdrawnEvent } from './utils';
-import { handlePerpTraded } from '../src/PerpMarket';
+import { createPositionUpdated, createTokenSuppliedEvent, createTokenWithdrawnEvent } from './utils';
 
 beforeEach(() => {
   clearStore() // <-- clear the store before each test in the file
@@ -15,8 +14,8 @@ describe("handlePositionUpdated", () => {
     handlePositionUpdated(positionUpdatedEvent)
 
     assert.entityCount('OpenPositionEntity', 1)
-    assert.fieldEquals('OpenPositionEntity', '0x0000000000000000000000000000000000000000-1-2', 'assetId', '2')
-    assert.fieldEquals('OpenPositionEntity', '0x0000000000000000000000000000000000000000-1-2', 'tradeAmount', '1')
+    assert.fieldEquals('OpenPositionEntity', '1-2', 'pair', '2')
+    assert.fieldEquals('OpenPositionEntity', '1-2', 'tradeAmount', '1')
   })
 
   test('decrease position amount', () => {
@@ -27,8 +26,8 @@ describe("handlePositionUpdated", () => {
     handlePositionUpdated(positionUpdatedEvent2)
 
     assert.entityCount('OpenPositionEntity', 1)
-    assert.fieldEquals('OpenPositionEntity', '0x0000000000000000000000000000000000000000-1-2', 'assetId', '2')
-    assert.fieldEquals('OpenPositionEntity', '0x0000000000000000000000000000000000000000-1-2', 'tradeAmount', '0')
+    assert.fieldEquals('OpenPositionEntity', '1-2', 'pair', '2')
+    assert.fieldEquals('OpenPositionEntity', '1-2', 'tradeAmount', '0')
 
     assert.entityCount('TradeHistoryItem', 1)
   })
@@ -43,7 +42,7 @@ describe("handleTokenSupplied", () => {
     const id = `${tokenSuppliedEvent.transaction.hash.toHex()}-${tokenSuppliedEvent.logIndex.toString()}`
 
     assert.entityCount('LendingUserHistoryItem', 1)
-    assert.fieldEquals('LendingUserHistoryItem', id, 'assetId', '1')
+    assert.fieldEquals('LendingUserHistoryItem', id, 'pairId', '1')
     assert.fieldEquals('LendingUserHistoryItem', id, 'assetAmount', '10')
   })
 })
@@ -57,28 +56,7 @@ describe("handleTokenWithdrawn", () => {
     const id = `${tokenWithdrawnEvent.transaction.hash.toHex()}-${tokenWithdrawnEvent.logIndex.toString()}`
 
     assert.entityCount('LendingUserHistoryItem', 1)
-    assert.fieldEquals('LendingUserHistoryItem', id, 'assetId', '1')
-    assert.fieldEquals('LendingUserHistoryItem', id, 'assetAmount', '10')
-  })
-})
-
-describe("handlePerpTraded", () => {
-  test('check history', () => {
-    const tradedEvent = createPerpTradedEvent(
-      Address.zero(),
-      BigInt.fromI32(1),
-      BigInt.fromI32(10),
-      BigInt.fromI32(0),
-      BigInt.fromI32(0),
-      BigInt.fromI32(0)
-    )
-
-    handlePerpTraded(tradedEvent)
-
-    const id = `${tradedEvent.transaction.hash.toHex()}-${tradedEvent.logIndex.toString()}`
-
-    assert.entityCount('LendingUserHistoryItem', 1)
-    assert.fieldEquals('LendingUserHistoryItem', id, 'assetId', '1')
+    assert.fieldEquals('LendingUserHistoryItem', id, 'pairId', '1')
     assert.fieldEquals('LendingUserHistoryItem', id, 'assetAmount', '10')
   })
 })

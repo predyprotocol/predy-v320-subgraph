@@ -35,7 +35,7 @@ dataSources:
           handler: handleMarginUpdated
         - event: PositionUpdated(indexed uint256,uint256,int256,int256,(int256,int256,int256,int256,int256,int256),int256)
           handler: handlePositionUpdated
-        - event: PositionLiquidated(indexed uint256,uint256,int256,int256,(int256,int256,int256,int256,int256,int256),int256)
+        - event: PositionLiquidated(indexed uint256,uint256,int256,int256,(int256,int256,int256,int256,int256,int256),int256,uint256)
           handler: handlePositionLiquidated
         - event: ScaledAssetPositionUpdated(indexed uint256,bool,int256,int256)
           handler: handleScaledAssetPositionUpdated
@@ -47,6 +47,8 @@ dataSources:
           handler: handleInterestGrowthUpdated
         - event: PremiumGrowthUpdated(indexed uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handlePremiumGrowthUpdated
+        - event: RecepientUpdated(uint256,address)
+          handler: handleRecipientUpdated
       file: ./src/PredyPool.ts
   - kind: ethereum/contract
     name: PerpMarket

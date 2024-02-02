@@ -127,7 +127,6 @@ export function createFeeHistory(
 export function createLiquidationHistory(
   txHash: string,
   vaultId: BigInt,
-  penalty: BigInt,
   eventTime: BigInt
 ): void {
   const historyItem = new TradeHistoryItem(
@@ -136,7 +135,7 @@ export function createLiquidationHistory(
 
   historyItem.vault = toVaultId(vaultId)
   historyItem.action = 'LIQUIDATION'
-  historyItem.payoff = penalty
+  historyItem.payoff = BigInt.zero()
   historyItem.txHash = txHash
   historyItem.createdAt = eventTime
 

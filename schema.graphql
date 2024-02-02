@@ -37,8 +37,8 @@ type VaultEntity @entity {
   marginId: Bytes!
   vaultId: BigInt! # uint256
   owner: Bytes! # address
+  recipient: Bytes! # address
   margin: BigInt! # int256
-  isMainVault: Boolean! # bool
   isClosed: Boolean! # bool
   openPositions: OpenPositionEntity!
   history: [TradeHistoryItem!]! @derivedFrom(field: "vault")
@@ -87,9 +87,11 @@ type TradeHistoryItem @entity {
 
 type PerpTradeHistoryItem @entity {
   id: ID! # txHash + txIndex
+  txHash: Bytes!
   trader: Bytes!
   vault: VaultEntity!
   pair: PairEntity!
+  action: Action!
   size: BigInt!
   entryValue: BigInt!
   payoff: BigInt!
@@ -118,6 +120,7 @@ type GammaTradeHistoryItem @entity {
 
 type SpotTradeHistoryItem @entity {
   id: ID! # txHash + txIndex
+  txHash: Bytes!
   trader: Bytes!
   filler: Bytes!
   baseToken: Bytes!
