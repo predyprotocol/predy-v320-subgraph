@@ -41,7 +41,7 @@ import { updateOpenInterest } from './OpenInterest'
 import { perpMarketAddress } from './contracts'
 import { createPerpLiquidationHistory } from './perpHistory'
 
-export function handleOperatorUpdated(event: OperatorUpdated): void {}
+export function handleOperatorUpdated(event: OperatorUpdated): void { }
 
 export function handlePairAdded(event: PairAdded): void {
   const pair = ensurePairEntity(event.params.pairId, event.block.timestamp)
@@ -99,7 +99,7 @@ export function handleTokenWithdrawn(event: TokenWithdrawn): void {
   )
 }
 
-export function handleRecepientUpdated(event: RecepientUpdated): void {
+export function handleRecipientUpdated(event: RecepientUpdated): void {
   const vault = new VaultEntity(toVaultId(event.params.vaultId))
 
   vault.recipient = event.params.recipient
@@ -247,11 +247,11 @@ function updatePosition(
   if (!tradeAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-        '-' +
-        logIndex.toString() +
-        '-' +
-        vaultId.toString() +
-        '-perp'
+      '-' +
+      logIndex.toString() +
+      '-' +
+      vaultId.toString() +
+      '-perp'
     )
 
     historyItem.vault = toVaultId(vaultId)
@@ -270,11 +270,11 @@ function updatePosition(
   if (!tradeSqrtAmount.equals(BigInt.zero())) {
     const historyItem = new TradeHistoryItem(
       txHash.toHex() +
-        '-' +
-        logIndex.toString() +
-        '-' +
-        vaultId.toString() +
-        '-sqrt'
+      '-' +
+      logIndex.toString() +
+      '-' +
+      vaultId.toString() +
+      '-sqrt'
     )
 
     historyItem.vault = toVaultId(vaultId)
@@ -307,9 +307,9 @@ export function handleRebalanced(event: Rebalanced): void {
 
 export function handleScaledAssetPositionUpdated(
   event: ScaledAssetPositionUpdated
-): void {}
+): void { }
 
-export function handleSqrtPositionUpdated(event: SqrtPositionUpdated): void {}
+export function handleSqrtPositionUpdated(event: SqrtPositionUpdated): void { }
 
 export function handleInterestGrowthUpdated(
   event: InterestGrowthUpdated

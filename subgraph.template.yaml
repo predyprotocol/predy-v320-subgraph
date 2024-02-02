@@ -77,30 +77,6 @@ dataSources:
           handler: handlePerpTraded
       file: ./src/PerpMarket.ts
   - kind: ethereum/contract
-    name: PredictMarket
-    network: {{network}}
-    source:
-      address: "{{PredictMarket}}"
-      abi: PredictMarket
-      startBlock: {{startBlock}}
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.5
-      language: wasm/assemblyscript
-      entities:
-        - PredictTradeHistoryItem
-      abis:
-        - name: PredictMarket
-          file: ./abis/PredictMarket.json
-      eventHandlers:
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
-        - event: PredictPositionOpened(indexed uint256,address,uint256,uint256,(int256,int256,int256,int256,int256,int256),uint256,uint256)
-          handler: handlePredictPositionOpened
-        - event: PredictPositionClosed(uint256,uint256,(int256,int256,int256,int256,int256,int256),int256)
-          handler: handlePredictPositionClosed
-      file: ./src/PredictMarket.ts
-  - kind: ethereum/contract
     name: SpotMarket
     network: {{network}}
     source:
@@ -120,27 +96,3 @@ dataSources:
         - event: SpotTraded(indexed address,address,address,address,int256,int256,address)
           handler: handleSpotTraded
       file: ./src/SpotMarket.ts
-  - kind: ethereum/contract
-    name: GammaTradeMarket
-    network: {{network}}
-    source:
-      address: "{{GammaTradeMarket}}"
-      abi: GammaTradeMarket
-      startBlock: {{startBlock}}
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.5
-      language: wasm/assemblyscript
-      entities:
-        - GammaTradeHistoryItem
-      abis:
-        - name: GammaTradeMarket
-          file: ./abis/GammaTradeMarket.json
-      eventHandlers:
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
-        - event: GammaPositionTraded(indexed address,uint256,uint256,uint256,uint256,(int256,int256,int256,int256,int256,int256),int256,int256)
-          handler: handleGammaPositionTraded
-        - event: GammaPositionHedged(indexed address,uint256,uint256,uint256,int256,(int256,int256,int256,int256,int256,int256),int256)
-          handler: handleGammaPositionHedged
-      file: ./src/GammaTradeMarket.ts

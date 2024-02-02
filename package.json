@@ -7,7 +7,7 @@
     "build": "graph build",
     "fmt:fix": "prettier --write src/**/*",
     "prepare:arbitrum": "mustache config/arbitrum.json subgraph.template.yaml > subgraph.yaml && mustache config/arbitrum.json ./src/contracts.template.ts > ./src/contracts.ts",
-    "deploy:studio:arbitrum": "graph deploy --studio predy-v6-subgraph"
+    "deploy:studio:arbitrum": "graph deploy --studio predyv6arbitrum"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "^0.55.0",
