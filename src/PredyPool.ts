@@ -56,11 +56,17 @@ export function handlePairAdded(event: PairAdded): void {
 export function handleVaultCreated(event: VaultCreated): void {
   const vault = new VaultEntity(toVaultId(event.params.vaultId))
 
+  const openPosition = ensureOpenPosition(event.params.pairId, event.params.vaultId, event.block.timestamp)
+
+  openPosition.save()
+
   vault.marginId = event.params.marginId
   vault.vaultId = event.params.vaultId
   vault.owner = event.params.owner
+  vault.recipient = event.params.owner
   vault.margin = BigInt.zero()
   vault.isClosed = false
+  vault.openPosition = openPosition.id
 
   vault.save()
 }
@@ -238,6 +244,8 @@ function updatePosition(
       .plus(payoff.perpPayoff)
       .plus(payoff.sqrtPayoff)
       .plus(fee)
+
+    vault.save()
   }
 
   if (!fee.equals(BigInt.zero())) {

@@ -40,7 +40,7 @@ type VaultEntity @entity {
   recipient: Bytes! # address
   margin: BigInt! # int256
   isClosed: Boolean! # bool
-  openPositions: OpenPositionEntity!
+  openPosition: OpenPositionEntity
   history: [TradeHistoryItem!]! @derivedFrom(field: "vault")
 }
 

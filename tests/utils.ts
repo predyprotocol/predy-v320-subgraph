@@ -1,6 +1,6 @@
 import { ethereum, BigInt, Address, Bytes, ByteArray } from "@graphprotocol/graph-ts"
 import { newMockEvent } from "matchstick-as/assembly/index"
-import { PositionUpdated, TokenSupplied, TokenWithdrawn } from "../generated/PredyPool/PredyPool"
+import { PositionUpdated, TokenSupplied, TokenWithdrawn, VaultCreated } from "../generated/PredyPool/PredyPool"
 import { PerpTraded } from "../generated/PerpMarket/PerpMarket"
 
 export function createPositionUpdated(vaultId: BigInt, assetId: BigInt, tradeAmount: BigInt, tradeSqrtAmount: BigInt, fee: BigInt): PositionUpdated {
@@ -71,6 +71,30 @@ export function createTokenWithdrawnEvent(assetId: BigInt, finalWithdrawnAmount:
   tokenWithdrawnEvent.parameters.push(finalWithdrawnAmountParam)
 
   return tokenWithdrawnEvent
+}
+
+export function createVaultCreatedEvent(
+  vaultId: BigInt,
+  owner: Address,
+  marginId: Address,
+  pairId: BigInt,
+): VaultCreated {
+  let vaultCreatedEvent = changetype<VaultCreated>(newMockEvent())
+
+  vaultCreatedEvent.address = Address.zero()
+  vaultCreatedEvent.parameters = new Array()
+
+  let vaultIdParam = new ethereum.EventParam("vaultId", ethereum.Value.fromUnsignedBigInt(vaultId))
+  let ownerParam = new ethereum.EventParam("owner", ethereum.Value.fromAddress(owner))
+  let marginIdParam = new ethereum.EventParam("marginId", ethereum.Value.fromAddress(marginId))
+  let pairIdParam = new ethereum.EventParam("pairId", ethereum.Value.fromUnsignedBigInt(pairId))
+
+  vaultCreatedEvent.parameters.push(vaultIdParam)
+  vaultCreatedEvent.parameters.push(ownerParam)
+  vaultCreatedEvent.parameters.push(marginIdParam)
+  vaultCreatedEvent.parameters.push(pairIdParam)
+
+  return vaultCreatedEvent
 }
 
 export function createPerpTradedEvent(

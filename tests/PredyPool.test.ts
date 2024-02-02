@@ -1,7 +1,7 @@
-import { BigInt } from '@graphprotocol/graph-ts'; //
+import { Address, BigInt } from '@graphprotocol/graph-ts'; //
 import { assert, beforeEach, clearStore, describe, test } from 'matchstick-as/assembly/index';
-import { handlePositionUpdated, handleTokenSupplied, handleTokenWithdrawn } from '../src/PredyPool';
-import { createPositionUpdated, createTokenSuppliedEvent, createTokenWithdrawnEvent } from './utils';
+import { handlePositionUpdated, handleTokenSupplied, handleTokenWithdrawn, handleVaultCreated } from '../src/PredyPool';
+import { createPositionUpdated, createTokenSuppliedEvent, createTokenWithdrawnEvent, createVaultCreatedEvent } from './utils';
 
 beforeEach(() => {
   clearStore() // <-- clear the store before each test in the file
@@ -44,6 +44,19 @@ describe("handleTokenSupplied", () => {
     assert.entityCount('LendingUserHistoryItem', 1)
     assert.fieldEquals('LendingUserHistoryItem', id, 'pairId', '1')
     assert.fieldEquals('LendingUserHistoryItem', id, 'assetAmount', '10')
+  })
+})
+
+describe("handleVaultCreated", () => {
+  test('vault created', () => {
+    const vaultCreatedEvent = createVaultCreatedEvent(BigInt.fromI32(1), Address.zero(), Address.zero(), BigInt.fromI32(1))
+
+    handleVaultCreated(vaultCreatedEvent)
+
+    assert.entityCount('VaultEntity', 1)
+    assert.fieldEquals('VaultEntity', '1', 'owner', '0x0000000000000000000000000000000000000000')
+    assert.fieldEquals('VaultEntity', '1', 'vaultId', '1')
+    assert.fieldEquals('OpenPositionEntity', '1-1', 'pair', '1')
   })
 })
 
