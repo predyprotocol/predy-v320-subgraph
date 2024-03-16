@@ -100,6 +100,13 @@ type PerpTradeHistoryItem @entity {
   createdAt: BigInt!
 }
 
+type TradedOrderIDs @entity {
+  id: ID! # time + orderId
+  market: Bytes!
+  orderId: BigInt!
+  createdAt: BigInt!
+}
+
 type PredictTradeHistoryItem @entity {
   id: ID! # txHash + txIndex
   trader: Bytes!

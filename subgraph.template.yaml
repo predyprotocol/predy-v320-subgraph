@@ -67,14 +67,12 @@ dataSources:
         - name: PerpMarket
           file: ./abis/PerpMarket.json
       eventHandlers:
-        - event: PerpClosedByTPSLOrder(indexed address,uint256,int256,(int256,int256,int256,int256,int256,int256),int256,uint256)
-          handler: handlePerpClosedByTPSLOrder
-        - event: PerpTPSLOrderUpdated(indexed address,uint256,uint256,uint256)
-          handler: handlePerpTPSLOrderUpdated
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred
         - event: PerpTraded(indexed address,uint256,uint256,int256,(int256,int256,int256,int256,int256,int256),int256,int256)
           handler: handlePerpTraded
+        - event: PerpTraded2(indexed address,uint256,uint256,int256,(int256,int256,int256,int256,int256,int256),int256,int256,uint64)
+          handler: handlePerpTraded2
       file: ./src/PerpMarket.ts
   - kind: ethereum/contract
     name: SpotMarket

@@ -8,9 +8,12 @@ import {
   OpenPositionEntity,
   PairEntity,
   TokenEntity,
-  TradeHistoryItem
+  TradeHistoryItem,
+  TradedOrderIDs
 } from '../generated/schema'
 import { Rebalanced } from '../generated/PredyPool/PredyPool'
+
+Bytes.fromU64
 
 export function ensurePairEntity(
   pairId: BigInt,
@@ -306,4 +309,29 @@ export function toStrategyUserPositionId(
   account: Bytes
 ): string {
   return strategyId.toString() + '-' + account.toHex()
+}
+
+export function ensureTradedOrderIDs(
+  eventTime: BigInt,
+  orderId: BigInt,
+  market: Bytes
+): TradedOrderIDs {
+  const id = '0x' + pad8(eventTime.toHex()) + pad8(orderId.toHex())
+
+  let tradedOrderId = TradedOrderIDs.load(id)
+
+  if (tradedOrderId == null) {
+    tradedOrderId = new TradedOrderIDs(id)
+    tradedOrderId.market = market
+    tradedOrderId.orderId = orderId
+    tradedOrderId.createdAt = eventTime
+  }
+
+  return tradedOrderId
+}
+
+export function pad8(_hex: string): string {
+  const hex = _hex.replace('0x', '')
+
+  return hex.padStart(8 * 2, '0')
 }
